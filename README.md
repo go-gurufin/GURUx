@@ -1,4 +1,4 @@
-# Compliance Chain
+# Compliance Chain(MU)
 ## 1. Definition
 The Compliance Chain functions as a semi-private chain whereby GURUFIN operates the Compliance and Sentry Nodes while the operation and delegation of Watcher Nodes are open to external entities. By employing the Tendermint BFT and Proof-of-Compliance (PoC) consensus algorithms, the network achieves streamlined transaction processing with remarkably low gas fees.
 
