@@ -1,9 +1,24 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package main
 
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -21,25 +36,23 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	ethermint "github.com/tharsis/ethermint/types"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	"github.com/evmos/evmos/v12/types"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 
-	evmoskr "github.com/tharsis/evmos/v4/crypto/keyring"
+	evmoskr "github.com/evmos/evmos/v12/crypto/keyring"
 
-	vestingcli "github.com/tharsis/evmos/v4/x/vesting/client/cli"
-	vestingtypes "github.com/tharsis/evmos/v4/x/vesting/types"
+	vestingcli "github.com/evmos/evmos/v12/x/vesting/client/cli"
+	vestingtypes "github.com/evmos/evmos/v12/x/vesting/types"
 )
 
 const (
 	flagVestingStart = "vesting-start-time"
-	flagVestingEnd   = "vesting-end-time"
-	flagVestingAmt   = "vesting-amount"
 )
 
 // AddGenesisAccountCmd returns add-genesis-account cobra Command.
 func AddGenesisAccountCmd(defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add-genesis-account [address_or_key_name] [coin][,[coin]]",
+		Use:   "add-genesis-account ADDRESS_OR_KEY_NAME COIN...",
 		Short: "Add a genesis account to genesis.json",
 		Long: `Add a genesis account to genesis.json. The provided account must specify
 the account address or key name and a list of initial coins. If a key name is given,
@@ -68,6 +81,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 						keyringBackend,
 						clientCtx.HomeDir,
 						inBuf,
+						clientCtx.Codec,
 						evmoskr.Option(),
 					)
 					if err != nil {
@@ -82,7 +96,10 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 					return fmt.Errorf("failed to get address from Keyring: %w", err)
 				}
 
-				addr = info.GetAddress()
+				addr, err = info.GetAddress()
+				if err != nil {
+					return fmt.Errorf("failed to get address from Keyring: %w", err)
+				}
 			}
 
 			coins, err := sdk.ParseCoinsNormalized(args[1])
@@ -93,19 +110,6 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			vestingStart, err := cmd.Flags().GetInt64(flagVestingStart)
 			if err != nil {
 				return err
-			}
-			vestingEnd, err := cmd.Flags().GetInt64(flagVestingEnd)
-			if err != nil {
-				return err
-			}
-			vestingAmtStr, err := cmd.Flags().GetString(flagVestingAmt)
-			if err != nil {
-				return err
-			}
-
-			vestingAmt, err := sdk.ParseCoinsNormalized(vestingAmtStr)
-			if err != nil {
-				return fmt.Errorf("failed to parse vesting amount: %w", err)
 			}
 
 			// create concrete account type based on input parameters
@@ -213,28 +217,8 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 					vestingPeriods,
 				)
 
-			// SDK vesting types
-			case !vestingAmt.IsZero():
-				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), vestingEnd)
-
-				if (balances.Coins.IsZero() && !baseVestingAccount.OriginalVesting.IsZero()) ||
-					baseVestingAccount.OriginalVesting.IsAnyGT(balances.Coins) {
-					return errors.New("vesting amount cannot be greater than total amount")
-				}
-
-				switch {
-				case vestingStart != 0 && vestingEnd != 0:
-					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, vestingStart)
-
-				case vestingEnd != 0:
-					genAccount = authvesting.NewDelayedVestingAccountRaw(baseVestingAccount)
-
-				default:
-					return errors.New("invalid vesting parameters; must supply start and end time or end time")
-				}
-
 			default:
-				genAccount = &ethermint.EthAccount{
+				genAccount = &types.EthAccount{
 					BaseAccount: baseAccount,
 					CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
 				}
@@ -303,13 +287,11 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 
 	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|kwallet|pass|test)")
-	cmd.Flags().String(flagVestingAmt, "", "amount of coins for vesting accounts")
 	cmd.Flags().Int64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")
-	cmd.Flags().Int64(flagVestingEnd, 0, "schedule end time (unix epoch) for vesting accounts")
 	cmd.Flags().Bool(vestingcli.FlagClawback, false, "create clawback account")
 	cmd.Flags().String(vestingcli.FlagFunder, "", "funder address for clawback")
-	cmd.Flags().String(vestingcli.FlagLockup, "", "path to file containing unlocking periods")
-	cmd.Flags().String(vestingcli.FlagVesting, "", "path to file containing vesting periods")
+	cmd.Flags().String(vestingcli.FlagLockup, "", "path to file containing unlocking periods for a clawback vesting account")
+	cmd.Flags().String(vestingcli.FlagVesting, "", "path to file containing vesting periods for a clawback vesting account")
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd

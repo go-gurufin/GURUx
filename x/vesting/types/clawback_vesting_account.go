@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package types
 
 import (
@@ -63,7 +79,7 @@ func (va ClawbackVestingAccount) GetVestedCoins(blockTime time.Time) sdk.Coins {
 // GetVestingCoins returns the total number of vesting coins. If no coins are
 // vesting, nil is returned.
 func (va ClawbackVestingAccount) GetVestingCoins(blockTime time.Time) sdk.Coins {
-	return va.OriginalVesting.Sub(va.GetVestedCoins(blockTime))
+	return va.OriginalVesting.Sub(va.GetVestedCoins(blockTime)...)
 }
 
 // LockedCoins returns the set of coins that are not spendable (i.e. locked),
@@ -132,14 +148,14 @@ func (va ClawbackVestingAccount) Validate() error {
 	return va.BaseVestingAccount.Validate()
 }
 
-// GetUnlockedOnly returns the unlocking schedule at blockTIme.
+// GetUnlockedOnly returns the unlocking schedule at blockTime.
 func (va ClawbackVestingAccount) GetUnlockedOnly(blockTime time.Time) sdk.Coins {
 	return ReadSchedule(va.GetStartTime(), va.EndTime, va.LockupPeriods, va.OriginalVesting, blockTime.Unix())
 }
 
-// GetLockedOnly returns the locking schedule at blockTIme.
+// GetLockedOnly returns the locking schedule at blockTime.
 func (va ClawbackVestingAccount) GetLockedOnly(blockTime time.Time) sdk.Coins {
-	return va.OriginalVesting.Sub(va.GetUnlockedOnly(blockTime))
+	return va.OriginalVesting.Sub(va.GetUnlockedOnly(blockTime)...)
 }
 
 // GetVestedOnly returns the vesting schedule at blockTime.
@@ -149,7 +165,7 @@ func (va ClawbackVestingAccount) GetVestedOnly(blockTime time.Time) sdk.Coins {
 
 // GetUnvestedOnly returns the unvesting schedule at blockTime.
 func (va ClawbackVestingAccount) GetUnvestedOnly(blockTime time.Time) sdk.Coins {
-	totalUnvested := va.OriginalVesting.Sub(va.GetVestedOnly(blockTime))
+	totalUnvested := va.OriginalVesting.Sub(va.GetVestedOnly(blockTime)...)
 	if totalUnvested == nil {
 		totalUnvested = sdk.Coins{}
 	}

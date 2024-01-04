@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package main
 
 import (
@@ -65,7 +81,7 @@ func displayInfo(info printInfo) error {
 // and the respective application.
 func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "init [moniker]",
+		Use:   "init MONIKER",
 		Short: "Initialize private validator, p2p, genesis, and application configuration files",
 		Long:  `Initialize validators's and node's configuration files.`,
 		Args:  cobra.ExactArgs(1),
@@ -101,8 +117,9 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 			// Get bip39 mnemonic
 			var mnemonic string
-			recover, _ := cmd.Flags().GetBool(genutilcli.FlagRecover)
-			if recover {
+
+			recoverKey, _ := cmd.Flags().GetBool(genutilcli.FlagRecover)
+			if recoverKey {
 				inBuf := bufio.NewReader(cmd.InOrStdin())
 				value, err := input.GetString("Enter your bip39 mnemonic", inBuf)
 				if err != nil {

@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package cli
 
 import (
@@ -12,20 +28,23 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	"github.com/tharsis/evmos/v4/x/incentives/types"
+	"github.com/evmos/evmos/v12/x/incentives/types"
 )
 
 // NewRegisterIncentiveProposalCmd implements the command to submit a register
-//  incentive proposal
+//
+//	incentive proposal
+//
+//nolint:staticcheck // we use deprecated flags
 func NewRegisterIncentiveProposalCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "register-incentive [contract-address] [allocation] [epochs]",
+		Use:     "register-incentive CONTRACT_ADDRESS ALLOCATION EPOCHS",
 		Args:    cobra.ExactArgs(3),
 		Short:   "Submit a proposal to register a contract incentive",
 		Long:    "Submit a proposal to register a contract incentive.",
-		Example: fmt.Sprintf("$ %s tx gov submit-proposal register-incentive <contract> --from=<key_or_address>", version.AppName),
+		Example: fmt.Sprintf("$ %s tx gov submit-legacy-proposal register-incentive <contract> --from=<key_or_address>", version.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -71,7 +90,7 @@ func NewRegisterIncentiveProposalCmd() *cobra.Command {
 			from := clientCtx.GetFromAddress()
 			content := types.NewRegisterIncentiveProposal(title, description, contract, allocation, uint32(epochs))
 
-			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
+			msg, err := govv1beta1.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}
@@ -100,14 +119,17 @@ func NewRegisterIncentiveProposalCmd() *cobra.Command {
 }
 
 // NewCancelIncentiveProposalCmd implements the command to submit a cancel
-//  incentive proposal
+//
+//	incentive proposal
+//
+//nolint:staticcheck
 func NewCancelIncentiveProposalCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "cancel-incentive [contract-address]",
+		Use:     "cancel-incentive CONTRACT_ADDRESS",
 		Args:    cobra.ExactArgs(1),
 		Short:   "Submit a proposal to cancel a contract incentive",
 		Long:    "Submit a proposal to cancel a contract incentive.",
-		Example: fmt.Sprintf("$ %s tx gov submit-proposal cancel-incentive <contract> --from=<key_or_address>", version.AppName),
+		Example: fmt.Sprintf("$ %s tx gov submit-legacy-proposal cancel-incentive <contract> --from=<key_or_address>", version.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -143,7 +165,7 @@ func NewCancelIncentiveProposalCmd() *cobra.Command {
 			from := clientCtx.GetFromAddress()
 			content := types.NewCancelIncentiveProposal(title, description, contract)
 
-			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
+			msg, err := govv1beta1.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}

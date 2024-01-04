@@ -1,7 +1,25 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package types
 
 import (
 	"time"
+
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -9,12 +27,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	"github.com/tharsis/ethermint/x/evm/statedb"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	"github.com/evmos/evmos/v12/x/evm/statedb"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 
-	inflationtypes "github.com/tharsis/evmos/v4/x/inflation/types"
+	inflationtypes "github.com/evmos/evmos/v12/x/inflation/types"
 )
 
 // AccountKeeper defines the expected interface needed to retrieve account info.
@@ -34,16 +52,17 @@ type BankKeeper interface {
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	HasSupply(ctx sdk.Context, denom string) bool
+	IterateAccountBalances(ctx sdk.Context, addr sdk.AccAddress, cb func(sdk.Coin) bool)
 }
 
 // GovKeeper defines the expected governance keeper interface used on incentives
 type GovKeeper interface {
 	Logger(sdk.Context) log.Logger
-	GetVotingParams(ctx sdk.Context) govtypes.VotingParams
-	GetProposal(ctx sdk.Context, proposalID uint64) (govtypes.Proposal, bool)
+	GetVotingParams(ctx sdk.Context) govv1beta1.VotingParams
+	GetProposal(ctx sdk.Context, proposalID uint64) (govv1beta1.Proposal, bool)
 	InsertActiveProposalQueue(ctx sdk.Context, proposalID uint64, timestamp time.Time)
 	RemoveFromActiveProposalQueue(ctx sdk.Context, proposalID uint64, timestamp time.Time)
-	SetProposal(ctx sdk.Context, proposal govtypes.Proposal)
+	SetProposal(ctx sdk.Context, proposal govv1beta1.Proposal)
 }
 
 // InflationKeeper defines the expected mint keeper interface used on incentives
@@ -59,3 +78,13 @@ type EVMKeeper interface {
 
 // Stakekeeper defines the expected staking keeper interface used on incentives
 type StakeKeeper interface{}
+
+type (
+	LegacyParams = paramtypes.ParamSet
+	// Subspace defines an interface that implements the legacy Cosmos SDK x/params Subspace type.
+	// NOTE: This is used solely for migration of the Cosmos SDK x/params managed parameters.
+	Subspace interface {
+		GetParamSetIfExists(ctx sdk.Context, ps LegacyParams)
+		WithKeyTable(table paramtypes.KeyTable) paramtypes.Subspace
+	}
+)

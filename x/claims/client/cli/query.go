@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package cli
 
 import (
@@ -10,7 +26,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	"github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/evmos/evmos/v12/x/claims/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -84,7 +100,7 @@ func GetCmdQueryParams() *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.Params)
+			return clientCtx.PrintObjectLegacy(&res.Params)
 		},
 	}
 
@@ -93,10 +109,10 @@ func GetCmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryClaimsRecords implements the query claim-records command.
+// GetCmdQueryClaimsRecords implements the query claim records command.
 func GetCmdQueryClaimsRecords() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "claims-records",
+		Use:     "records",
 		Args:    cobra.NoArgs,
 		Short:   "Query all the claims records",
 		Long:    "Query the list of all the claims records",
@@ -131,10 +147,10 @@ func GetCmdQueryClaimsRecords() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryClaimsRecord implements the query claim-record command.
+// GetCmdQueryClaimsRecord implements the query claims record command.
 func GetCmdQueryClaimsRecord() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "claims-record [address]",
+		Use:     "record ADDRESS",
 		Args:    cobra.ExactArgs(1),
 		Short:   "Query the claims records for an account.",
 		Long:    "Query the claims records for an account.\nThis contains an address' initial claimable amount, and the claims per action.",

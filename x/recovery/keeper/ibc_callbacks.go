@@ -1,22 +1,40 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package keeper
 
 import (
 	"strings"
 
+	errorsmod "cosmossdk.io/errors"
+	"github.com/armon/go-metrics"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 
-	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
-	"github.com/cosmos/ibc-go/v3/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
+	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
-	"github.com/tharsis/evmos/v4/ibc"
-	evmos "github.com/tharsis/evmos/v4/types"
-	"github.com/tharsis/evmos/v4/x/recovery/types"
+	"github.com/evmos/evmos/v12/ibc"
+	"github.com/evmos/evmos/v12/utils"
+	"github.com/evmos/evmos/v12/x/recovery/types"
 )
 
 // OnRecvPacket performs an IBC receive callback. It returns the tokens that
@@ -24,10 +42,11 @@ import (
 // ethsecp256k1 address. The expected behavior is as follows:
 //
 // First transfer from authorized source chain:
-//  - sends back IBC tokens which originated from the source chain
-//  - sends over all Evmos native tokens
+//   - sends back IBC tokens which originated from the source chain
+//   - sends over all Evmos native tokens
+//
 // Second transfer from a different authorized source chain:
-//  - only sends back IBC tokens which originated from the source chain
+//   - only sends back IBC tokens which originated from the source chain
 func (k Keeper) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
@@ -51,17 +70,17 @@ func (k Keeper) OnRecvPacket(
 	// Get addresses in `evmos1` and the original bech32 format
 	sender, recipient, senderBech32, recipientBech32, err := ibc.GetTransferSenderRecipient(packet)
 	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err.Error())
+		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
 	// return error ACK if the address is on the deny list
 	if k.bankKeeper.BlockedAddr(sender) || k.bankKeeper.BlockedAddr(recipient) {
 		return channeltypes.NewErrorAcknowledgement(
-			sdkerrors.Wrapf(
+			errorsmod.Wrapf(
 				types.ErrBlockedAddress,
 				"sender (%s) or recipient (%s) address are in the deny list for sending and receiving transfers",
 				senderBech32, recipientBech32,
-			).Error(),
+			),
 		)
 	}
 
@@ -87,7 +106,7 @@ func (k Keeper) OnRecvPacket(
 	// Check if recipient pubkey is a supported key (eth_secp256k1, amino multisig,
 	// ed25519). Continue and return success ACK as the funds are not stuck on
 	// chain for supported keys
-	if account != nil && evmos.IsSupportedKey(account.GetPubKey()) {
+	if account != nil && utils.IsSupportedKey(account.GetPubKey()) {
 		return ack
 	}
 
@@ -129,16 +148,19 @@ func (k Keeper) OnRecvPacket(
 		timeout := uint64(ctx.BlockTime().Add(params.PacketTimeoutDuration).UnixNano())
 
 		// Recover the tokens to the bech32 prefixed address of the source chain
-		err = k.transferKeeper.SendTransfer(
-			ctx,
-			packet.DestinationPort,    // packet destination port is now the source
-			packet.DestinationChannel, // packet destination channel is now the source
-			coin,                      // balance of the coin
-			recipient,                 // recipient is the address in the Evmos chain
-			senderBech32,              // transfer to your own account address on the source chain
-			clienttypes.ZeroHeight(),  // timeout height disabled
-			timeout,                   // timeout timestamp is 4 hours from now
-		)
+
+		packetTransfer := &transfertypes.MsgTransfer{
+			SourcePort:       packet.DestinationPort,    // packet destination port is now the source
+			SourceChannel:    packet.DestinationChannel, // packet destination channel is now the source
+			Token:            coin,                      // balance of the coin
+			Sender:           recipient.String(),        // recipient is the address in the Evmos chain
+			Receiver:         senderBech32,              // transfer to your own account address on the source chain
+			TimeoutHeight:    clienttypes.ZeroHeight(),  // timeout height disabled
+			TimeoutTimestamp: timeout,                   // timeout timestamp is 4 hours from now
+			Memo:             "",
+		}
+
+		_, err = k.transferKeeper.Transfer(sdk.WrapSDKContext(ctx), packetTransfer)
 
 		if err != nil {
 			return true // stop iteration
@@ -147,7 +169,6 @@ func (k Keeper) OnRecvPacket(
 		balances = balances.Add(coin)
 		return false
 	})
-
 	// check error from the iteration above
 	if err != nil {
 		logger.Error(
@@ -158,12 +179,11 @@ func (k Keeper) OnRecvPacket(
 			"source-channel", packet.SourceChannel,
 			"error", err.Error(),
 		)
-
 		return channeltypes.NewErrorAcknowledgement(
-			sdkerrors.Wrapf(
+			errorsmod.Wrapf(
 				err,
 				"failed to recover IBC vouchers back to sender '%s' in the corresponding IBC chain", senderBech32,
-			).Error(),
+			),
 		)
 	}
 
@@ -185,6 +205,22 @@ func (k Keeper) OnRecvPacket(
 		"dest-channel", packet.DestinationChannel,
 	)
 
+	defer func() {
+		telemetry.IncrCounter(1, types.ModuleName, "ibc", "on_recv", "total")
+
+		for _, b := range balances {
+			if b.Amount.IsInt64() {
+				telemetry.IncrCounterWithLabels(
+					[]string{types.ModuleName, "ibc", "on_recv", "token", "total"},
+					float32(b.Amount.Int64()),
+					[]metrics.Label{
+						telemetry.NewLabel("denom", b.Denom),
+					},
+				)
+			}
+		}
+	}()
+
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeRecovery,
@@ -205,18 +241,18 @@ func (k Keeper) OnRecvPacket(
 // GetIBCDenomDestinationIdentifiers returns the destination port and channel of
 // the IBC denomination, i.e port and channel on Evmos for the voucher. It
 // returns an error if:
-//  - the denomination is invalid
-//  - the denom trace is not found on the store
-//  - destination port or channel ID are invalid
+//   - the denomination is invalid
+//   - the denom trace is not found on the store
+//   - destination port or channel ID are invalid
 func (k Keeper) GetIBCDenomDestinationIdentifiers(ctx sdk.Context, denom, sender string) (destinationPort, destinationChannel string, err error) {
 	ibcDenom := strings.SplitN(denom, "/", 2)
 	if len(ibcDenom) < 2 {
-		return "", "", sdkerrors.Wrap(transfertypes.ErrInvalidDenomForTransfer, denom)
+		return "", "", errorsmod.Wrap(transfertypes.ErrInvalidDenomForTransfer, denom)
 	}
 
 	hash, err := transfertypes.ParseHexHash(ibcDenom[1])
 	if err != nil {
-		return "", "", sdkerrors.Wrapf(
+		return "", "", errorsmod.Wrapf(
 			err,
 			"failed to recover IBC vouchers back to sender '%s' in the corresponding IBC chain", sender,
 		)
@@ -224,7 +260,7 @@ func (k Keeper) GetIBCDenomDestinationIdentifiers(ctx sdk.Context, denom, sender
 
 	denomTrace, found := k.transferKeeper.GetDenomTrace(ctx, hash)
 	if !found {
-		return "", "", sdkerrors.Wrapf(
+		return "", "", errorsmod.Wrapf(
 			transfertypes.ErrTraceNotFound,
 			"failed to recover IBC vouchers back to sender '%s' in the corresponding IBC chain", sender,
 		)
@@ -233,7 +269,7 @@ func (k Keeper) GetIBCDenomDestinationIdentifiers(ctx sdk.Context, denom, sender
 	path := strings.Split(denomTrace.Path, "/")
 	if len(path)%2 != 0 {
 		// safety check: shouldn't occur
-		return "", "", sdkerrors.Wrapf(
+		return "", "", errorsmod.Wrapf(
 			transfertypes.ErrInvalidDenomForTransfer,
 			"invalid denom (%s) trace path %s", denomTrace.BaseDenom, denomTrace.Path,
 		)
@@ -244,7 +280,7 @@ func (k Keeper) GetIBCDenomDestinationIdentifiers(ctx sdk.Context, denom, sender
 
 	_, found = k.channelKeeper.GetChannel(ctx, destinationPort, destinationChannel)
 	if !found {
-		return "", "", sdkerrors.Wrapf(
+		return "", "", errorsmod.Wrapf(
 			channeltypes.ErrChannelNotFound,
 			"port ID %s, channel ID %s", destinationPort, destinationChannel,
 		)
@@ -254,7 +290,7 @@ func (k Keeper) GetIBCDenomDestinationIdentifiers(ctx sdk.Context, denom, sender
 	// Safety check: verify that the destination port and channel are valid
 	if err := host.PortIdentifierValidator(destinationPort); err != nil {
 		// shouldn't occur
-		return "", "", sdkerrors.Wrapf(
+		return "", "", errorsmod.Wrapf(
 			host.ErrInvalidID,
 			"invalid port ID '%s': %s", destinationPort, err.Error(),
 		)
@@ -262,7 +298,7 @@ func (k Keeper) GetIBCDenomDestinationIdentifiers(ctx sdk.Context, denom, sender
 
 	if err := host.ChannelIdentifierValidator(destinationChannel); err != nil {
 		// shouldn't occur
-		return "", "", sdkerrors.Wrapf(
+		return "", "", errorsmod.Wrapf(
 			channeltypes.ErrInvalidChannelIdentifier,
 			"channel ID '%s': %s", destinationChannel, err.Error(),
 		)

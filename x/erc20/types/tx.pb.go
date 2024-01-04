@@ -6,24 +6,29 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
+	_ "github.com/cosmos/cosmos-proto"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/types"
-	_ "github.com/gogo/protobuf/gogoproto"
+	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	io "io"
-	math "math"
-	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -33,12 +38,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // MsgConvertCoin defines a Msg to convert a native Cosmos coin to a ERC20 token
 type MsgConvertCoin struct {
-	// Cosmos coin which denomination is registered in a token pair. The coin
+	// coin is a Cosmos coin whose denomination is registered in a token pair. The coin
 	// amount defines the amount of coins to convert.
 	Coin types.Coin `protobuf:"bytes,1,opt,name=coin,proto3" json:"coin"`
-	// recipient hex address to receive ERC20 token
+	// receiver is the hex address to receive ERC20 token
 	Receiver string `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	// cosmos bech32 address from the owner of the given Cosmos coins
+	// sender is the cosmos bech32 address from the owner of the given Cosmos coins
 	Sender string `protobuf:"bytes,3,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
@@ -48,9 +53,11 @@ func (*MsgConvertCoin) ProtoMessage()    {}
 func (*MsgConvertCoin) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f8926fc6cb676914, []int{0}
 }
+
 func (m *MsgConvertCoin) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgConvertCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgConvertCoin.Marshal(b, m, deterministic)
@@ -63,12 +70,15 @@ func (m *MsgConvertCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
+
 func (m *MsgConvertCoin) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgConvertCoin.Merge(m, src)
 }
+
 func (m *MsgConvertCoin) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgConvertCoin) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgConvertCoin.DiscardUnknown(m)
 }
@@ -97,8 +107,7 @@ func (m *MsgConvertCoin) GetSender() string {
 }
 
 // MsgConvertCoinResponse returns no fields
-type MsgConvertCoinResponse struct {
-}
+type MsgConvertCoinResponse struct{}
 
 func (m *MsgConvertCoinResponse) Reset()         { *m = MsgConvertCoinResponse{} }
 func (m *MsgConvertCoinResponse) String() string { return proto.CompactTextString(m) }
@@ -106,9 +115,11 @@ func (*MsgConvertCoinResponse) ProtoMessage()    {}
 func (*MsgConvertCoinResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f8926fc6cb676914, []int{1}
 }
+
 func (m *MsgConvertCoinResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgConvertCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgConvertCoinResponse.Marshal(b, m, deterministic)
@@ -121,12 +132,15 @@ func (m *MsgConvertCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
+
 func (m *MsgConvertCoinResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgConvertCoinResponse.Merge(m, src)
 }
+
 func (m *MsgConvertCoinResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgConvertCoinResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgConvertCoinResponse.DiscardUnknown(m)
 }
@@ -136,13 +150,13 @@ var xxx_messageInfo_MsgConvertCoinResponse proto.InternalMessageInfo
 // MsgConvertERC20 defines a Msg to convert a ERC20 token to a native Cosmos
 // coin.
 type MsgConvertERC20 struct {
-	// ERC20 token contract address registered in a token pair
+	// contract_address of an ERC20 token contract, that is registered in a token pair
 	ContractAddress string `protobuf:"bytes,1,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
 	// amount of ERC20 tokens to convert
 	Amount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount"`
-	// bech32 address to receive native Cosmos coins
+	// receiver is the bech32 address to receive native Cosmos coins
 	Receiver string `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	// sender hex address from the owner of the given ERC20 tokens
+	// sender is the hex address from the owner of the given ERC20 tokens
 	Sender string `protobuf:"bytes,4,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
@@ -152,9 +166,11 @@ func (*MsgConvertERC20) ProtoMessage()    {}
 func (*MsgConvertERC20) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f8926fc6cb676914, []int{2}
 }
+
 func (m *MsgConvertERC20) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgConvertERC20) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgConvertERC20.Marshal(b, m, deterministic)
@@ -167,12 +183,15 @@ func (m *MsgConvertERC20) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
+
 func (m *MsgConvertERC20) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgConvertERC20.Merge(m, src)
 }
+
 func (m *MsgConvertERC20) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgConvertERC20) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgConvertERC20.DiscardUnknown(m)
 }
@@ -201,8 +220,7 @@ func (m *MsgConvertERC20) GetSender() string {
 }
 
 // MsgConvertERC20Response returns no fields
-type MsgConvertERC20Response struct {
-}
+type MsgConvertERC20Response struct{}
 
 func (m *MsgConvertERC20Response) Reset()         { *m = MsgConvertERC20Response{} }
 func (m *MsgConvertERC20Response) String() string { return proto.CompactTextString(m) }
@@ -210,9 +228,11 @@ func (*MsgConvertERC20Response) ProtoMessage()    {}
 func (*MsgConvertERC20Response) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f8926fc6cb676914, []int{3}
 }
+
 func (m *MsgConvertERC20Response) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgConvertERC20Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgConvertERC20Response.Marshal(b, m, deterministic)
@@ -225,63 +245,182 @@ func (m *MsgConvertERC20Response) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
+
 func (m *MsgConvertERC20Response) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgConvertERC20Response.Merge(m, src)
 }
+
 func (m *MsgConvertERC20Response) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgConvertERC20Response) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgConvertERC20Response.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_MsgConvertERC20Response proto.InternalMessageInfo
 
+// MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
+// Since: cosmos-sdk 0.47
+type MsgUpdateParams struct {
+	// authority is the address of the governance account.
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// params defines the x/evm parameters to update.
+	// NOTE: All parameters must be supplied.
+	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
+}
+
+func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
+func (m *MsgUpdateParams) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateParams) ProtoMessage()    {}
+func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f8926fc6cb676914, []int{4}
+}
+
+func (m *MsgUpdateParams) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MsgUpdateParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateParams.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MsgUpdateParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateParams.Merge(m, src)
+}
+
+func (m *MsgUpdateParams) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MsgUpdateParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateParams proto.InternalMessageInfo
+
+func (m *MsgUpdateParams) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgUpdateParams) GetParams() Params {
+	if m != nil {
+		return m.Params
+	}
+	return Params{}
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+// Since: cosmos-sdk 0.47
+type MsgUpdateParamsResponse struct{}
+
+func (m *MsgUpdateParamsResponse) Reset()         { *m = MsgUpdateParamsResponse{} }
+func (m *MsgUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateParamsResponse) ProtoMessage()    {}
+func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f8926fc6cb676914, []int{5}
+}
+
+func (m *MsgUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MsgUpdateParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateParamsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MsgUpdateParamsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateParamsResponse.Merge(m, src)
+}
+
+func (m *MsgUpdateParamsResponse) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateParamsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgConvertCoin)(nil), "evmos.erc20.v1.MsgConvertCoin")
 	proto.RegisterType((*MsgConvertCoinResponse)(nil), "evmos.erc20.v1.MsgConvertCoinResponse")
 	proto.RegisterType((*MsgConvertERC20)(nil), "evmos.erc20.v1.MsgConvertERC20")
 	proto.RegisterType((*MsgConvertERC20Response)(nil), "evmos.erc20.v1.MsgConvertERC20Response")
+	proto.RegisterType((*MsgUpdateParams)(nil), "evmos.erc20.v1.MsgUpdateParams")
+	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "evmos.erc20.v1.MsgUpdateParamsResponse")
 }
 
 func init() { proto.RegisterFile("evmos/erc20/v1/tx.proto", fileDescriptor_f8926fc6cb676914) }
 
 var fileDescriptor_f8926fc6cb676914 = []byte{
-	// 455 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x52, 0x41, 0x6f, 0xd3, 0x30,
-	0x14, 0xae, 0xdb, 0xaa, 0x62, 0x1e, 0xda, 0x90, 0x85, 0xb6, 0x2e, 0x42, 0x6e, 0xe9, 0x61, 0xeb,
-	0x0e, 0xd8, 0x6b, 0xfb, 0x0b, 0x68, 0x04, 0x12, 0x87, 0x5d, 0x72, 0xe4, 0x32, 0x39, 0x8e, 0x95,
-	0x45, 0x50, 0xbf, 0xc8, 0xf6, 0xa2, 0xed, 0xc2, 0x61, 0x47, 0x4e, 0x48, 0xfc, 0x19, 0x7e, 0xc2,
-	0x8e, 0x93, 0xb8, 0x20, 0x0e, 0x13, 0x6a, 0xf9, 0x21, 0x28, 0x4e, 0x56, 0x16, 0xd0, 0xb6, 0x53,
-	0xec, 0xf7, 0x7d, 0xf9, 0xfc, 0xbd, 0xef, 0x3d, 0xbc, 0xab, 0x8a, 0x05, 0x58, 0xae, 0x8c, 0x9c,
-	0x1e, 0xf1, 0x62, 0xc2, 0xdd, 0x39, 0xcb, 0x0d, 0x38, 0x20, 0x5b, 0x1e, 0x60, 0x1e, 0x60, 0xc5,
-	0x24, 0x78, 0x91, 0x02, 0xa4, 0x1f, 0x15, 0x17, 0x79, 0xc6, 0x85, 0xd6, 0xe0, 0x84, 0xcb, 0x40,
-	0xdb, 0x8a, 0x1d, 0x3c, 0x4f, 0x21, 0x05, 0x7f, 0xe4, 0xe5, 0xa9, 0xae, 0x52, 0x09, 0xb6, 0x54,
-	0x8f, 0x85, 0x55, 0xbc, 0x98, 0xc4, 0xca, 0x89, 0x09, 0x97, 0x90, 0xe9, 0x0a, 0x1f, 0x5d, 0xe0,
-	0xad, 0x63, 0x9b, 0x86, 0xa0, 0x0b, 0x65, 0x5c, 0x08, 0x99, 0x26, 0x33, 0xdc, 0x2d, 0xf1, 0x3e,
-	0x1a, 0xa2, 0xf1, 0xe6, 0x74, 0x8f, 0x55, 0x02, 0xac, 0x14, 0x60, 0xb5, 0x00, 0x2b, 0x89, 0xf3,
-	0xee, 0xd5, 0xcd, 0xa0, 0x15, 0x79, 0x32, 0x09, 0xf0, 0x13, 0xa3, 0xa4, 0xca, 0x0a, 0x65, 0xfa,
-	0xed, 0x21, 0x1a, 0x6f, 0x44, 0xeb, 0x3b, 0xd9, 0xc1, 0x3d, 0xab, 0x74, 0xa2, 0x4c, 0xbf, 0xe3,
-	0x91, 0xfa, 0x36, 0xea, 0xe3, 0x9d, 0xe6, 0xd3, 0x91, 0xb2, 0x39, 0x68, 0xab, 0x46, 0xdf, 0x10,
-	0xde, 0xfe, 0x0b, 0xbd, 0x89, 0xc2, 0xe9, 0x11, 0x39, 0xc4, 0xcf, 0x24, 0x68, 0x67, 0x84, 0x74,
-	0x27, 0x22, 0x49, 0x8c, 0xb2, 0xd6, 0x5b, 0xdc, 0x88, 0xb6, 0x6f, 0xeb, 0xaf, 0xab, 0x32, 0x79,
-	0x8b, 0x7b, 0x62, 0x01, 0x67, 0xda, 0x55, 0x56, 0xe6, 0xac, 0x34, 0xfa, 0xf3, 0x66, 0xb0, 0x9f,
-	0x66, 0xee, 0xf4, 0x2c, 0x66, 0x12, 0x16, 0xbc, 0x8e, 0xa5, 0xfa, 0xbc, 0xb2, 0xc9, 0x07, 0xee,
-	0x2e, 0x72, 0x65, 0xd9, 0x3b, 0xed, 0xa2, 0xfa, 0xef, 0x46, 0x53, 0x9d, 0x7b, 0x9b, 0xea, 0x36,
-	0x9a, 0xda, 0xc3, 0xbb, 0xff, 0x38, 0xbf, 0xed, 0x6a, 0xfa, 0xb9, 0x8d, 0x3b, 0xc7, 0x36, 0x25,
-	0x9f, 0xf0, 0xe6, 0xdd, 0xbc, 0x29, 0x6b, 0x8e, 0x99, 0x35, 0x43, 0x09, 0xf6, 0x1f, 0xc6, 0xd7,
-	0xa1, 0x1d, 0x5c, 0x7e, 0xff, 0xfd, 0xb5, 0xfd, 0x92, 0x0c, 0xf8, 0x7f, 0xfb, 0xc4, 0x65, 0xc5,
-	0x3f, 0xf1, 0xb3, 0xba, 0x44, 0xf8, 0x69, 0x23, 0xda, 0xc1, 0xfd, 0x2f, 0x78, 0x42, 0x70, 0xf0,
-	0x08, 0x61, 0xed, 0x61, 0xec, 0x3d, 0x8c, 0xc8, 0xf0, 0x01, 0x0f, 0xbe, 0x36, 0x0f, 0xaf, 0x96,
-	0x14, 0x5d, 0x2f, 0x29, 0xfa, 0xb5, 0xa4, 0xe8, 0xcb, 0x8a, 0xb6, 0xae, 0x57, 0xb4, 0xf5, 0x63,
-	0x45, 0x5b, 0xef, 0x0f, 0xef, 0x4c, 0xc9, 0x9d, 0x0a, 0x63, 0x33, 0x5b, 0xab, 0x15, 0x33, 0x7e,
-	0x5e, 0x4b, 0xfa, 0x61, 0xc5, 0x3d, 0xbf, 0xc3, 0xb3, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x27,
-	0x4b, 0x80, 0x23, 0x42, 0x03, 0x00, 0x00,
+	// 574 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0x4d, 0x8b, 0x13, 0x31,
+	0x1c, 0xc6, 0x3b, 0xbb, 0xa5, 0xd8, 0x74, 0xe9, 0x4a, 0x58, 0xfa, 0x86, 0x4c, 0x6b, 0x0f, 0xbb,
+	0x55, 0xd8, 0x49, 0xdb, 0x15, 0x0f, 0xde, 0x6c, 0x51, 0xf0, 0xb0, 0x20, 0x23, 0x82, 0x78, 0x29,
+	0xe9, 0x34, 0x64, 0x07, 0x9d, 0x64, 0x48, 0xd2, 0x61, 0x7b, 0xf1, 0xd0, 0x2f, 0xa0, 0xe0, 0x17,
+	0xf1, 0xe0, 0xc1, 0x8f, 0xb0, 0xc7, 0x45, 0x2f, 0xe2, 0x61, 0x91, 0x76, 0xc1, 0xaf, 0x21, 0x93,
+	0x49, 0x5f, 0xa6, 0x76, 0xd7, 0x4b, 0x3b, 0xc9, 0xf3, 0x24, 0xf9, 0x3d, 0xff, 0xfc, 0x03, 0xca,
+	0x24, 0x0a, 0xb8, 0x44, 0x44, 0x78, 0xdd, 0x36, 0x8a, 0x3a, 0x48, 0x9d, 0x3b, 0xa1, 0xe0, 0x8a,
+	0xc3, 0xa2, 0x16, 0x1c, 0x2d, 0x38, 0x51, 0xa7, 0x66, 0x7b, 0x5c, 0xc6, 0xce, 0x21, 0x96, 0x04,
+	0x45, 0x9d, 0x21, 0x51, 0xb8, 0x83, 0x3c, 0xee, 0xb3, 0xc4, 0x5f, 0x2b, 0x1b, 0x3d, 0x90, 0x34,
+	0xde, 0x27, 0x90, 0xd4, 0x08, 0xd5, 0x44, 0x18, 0xe8, 0x11, 0x4a, 0x06, 0x46, 0xba, 0xb7, 0x71,
+	0x38, 0x25, 0x8c, 0x48, 0x7f, 0xa1, 0x1e, 0x50, 0x4e, 0x79, 0xb2, 0x2a, 0xfe, 0x5a, 0xac, 0xa1,
+	0x9c, 0xd3, 0xf7, 0x04, 0xe1, 0xd0, 0x47, 0x98, 0x31, 0xae, 0xb0, 0xf2, 0x39, 0x33, 0x6b, 0x9a,
+	0x13, 0x50, 0x3c, 0x95, 0xb4, 0xcf, 0x59, 0x44, 0x84, 0xea, 0x73, 0x9f, 0xc1, 0x13, 0x90, 0x8d,
+	0x29, 0x2b, 0x56, 0xc3, 0x6a, 0x15, 0xba, 0x55, 0xc7, 0x00, 0xc4, 0x31, 0x1c, 0x13, 0xc3, 0x89,
+	0x8d, 0xbd, 0xec, 0xc5, 0x55, 0x3d, 0xe3, 0x6a, 0x33, 0xac, 0x81, 0x3b, 0x82, 0x78, 0xc4, 0x8f,
+	0x88, 0xa8, 0xec, 0x34, 0xac, 0x56, 0xde, 0x5d, 0x8e, 0x61, 0x09, 0xe4, 0x24, 0x61, 0x23, 0x22,
+	0x2a, 0xbb, 0x5a, 0x31, 0xa3, 0x66, 0x05, 0x94, 0xd2, 0x47, 0xbb, 0x44, 0x86, 0x9c, 0x49, 0xd2,
+	0xfc, 0x66, 0x81, 0xfd, 0x95, 0xf4, 0xcc, 0xed, 0x77, 0xdb, 0xf0, 0x01, 0xb8, 0xeb, 0x71, 0xa6,
+	0x04, 0xf6, 0xd4, 0x00, 0x8f, 0x46, 0x82, 0x48, 0xa9, 0x11, 0xf3, 0xee, 0xfe, 0x62, 0xfe, 0x69,
+	0x32, 0x0d, 0x9f, 0x83, 0x1c, 0x0e, 0xf8, 0x98, 0xa9, 0x04, 0xa5, 0xe7, 0xc4, 0xa0, 0xbf, 0xae,
+	0xea, 0x87, 0xd4, 0x57, 0x67, 0xe3, 0xa1, 0xe3, 0xf1, 0xc0, 0x94, 0xd5, 0xfc, 0x1d, 0xcb, 0xd1,
+	0x3b, 0xa4, 0x26, 0x21, 0x91, 0xce, 0x0b, 0xa6, 0x5c, 0xb3, 0x3a, 0x15, 0x6a, 0xf7, 0xc6, 0x50,
+	0xd9, 0x54, 0xa8, 0x2a, 0x28, 0x6f, 0x90, 0x2f, 0x53, 0x7d, 0x4c, 0x52, 0xbd, 0x0e, 0x47, 0x58,
+	0x91, 0x97, 0x58, 0xe0, 0x40, 0xc2, 0xc7, 0x20, 0x8f, 0xc7, 0xea, 0x8c, 0x0b, 0x5f, 0x4d, 0x92,
+	0x38, 0xbd, 0xca, 0xf7, 0xaf, 0xc7, 0x07, 0xa6, 0xe8, 0x26, 0xd1, 0x2b, 0x25, 0x7c, 0x46, 0xdd,
+	0x95, 0x15, 0x3e, 0x02, 0xb9, 0x50, 0xef, 0xa0, 0x23, 0x16, 0xba, 0x25, 0x27, 0xdd, 0x7d, 0x4e,
+	0xb2, 0xbf, 0xb9, 0x23, 0xe3, 0x7d, 0x52, 0x9c, 0xfe, 0xf9, 0xf2, 0x70, 0xb5, 0x8b, 0x81, 0x5d,
+	0x07, 0x5a, 0xc0, 0x76, 0xaf, 0x77, 0xc0, 0xee, 0xa9, 0xa4, 0xf0, 0x03, 0x28, 0xac, 0x37, 0x87,
+	0xbd, 0x79, 0x4e, 0xfa, 0x06, 0x6b, 0x87, 0xb7, 0xeb, 0xcb, 0x5a, 0x1c, 0x4d, 0x7f, 0x5c, 0x7f,
+	0xde, 0xb9, 0x0f, 0xeb, 0xe8, 0x9f, 0xe7, 0x84, 0xbc, 0xc4, 0x3f, 0xd0, 0x8d, 0x35, 0xb5, 0xc0,
+	0x5e, 0xaa, 0x0f, 0xea, 0x37, 0x9f, 0xa0, 0x0d, 0xb5, 0xa3, 0xff, 0x18, 0x96, 0x0c, 0x2d, 0xcd,
+	0xd0, 0x84, 0x8d, 0x5b, 0x18, 0xf4, 0x1c, 0x7c, 0x03, 0xf6, 0x52, 0xb7, 0xb6, 0x8d, 0x61, 0xdd,
+	0xb0, 0x95, 0x61, 0x5b, 0x99, 0x7b, 0xbd, 0x8b, 0x99, 0x6d, 0x5d, 0xce, 0x6c, 0xeb, 0xf7, 0xcc,
+	0xb6, 0x3e, 0xcd, 0xed, 0xcc, 0xe5, 0xdc, 0xce, 0xfc, 0x9c, 0xdb, 0x99, 0xb7, 0xad, 0xb5, 0x66,
+	0x35, 0x7c, 0xfa, 0x37, 0xea, 0xb4, 0xd1, 0xb9, 0x61, 0xd5, 0x2d, 0x3b, 0xcc, 0xe9, 0x97, 0x7c,
+	0xf2, 0x37, 0x00, 0x00, 0xff, 0xff, 0xae, 0xb8, 0xfd, 0xf8, 0x9a, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -297,6 +436,9 @@ type MsgClient interface {
 	// ConvertERC20 mints a native Cosmos coin representation of the ERC20 token
 	// contract that is registered on the token mapping.
 	ConvertERC20(ctx context.Context, in *MsgConvertERC20, opts ...grpc.CallOption) (*MsgConvertERC20Response, error)
+	// UpdateParams defined a governance operation for updating the x/erc20 module parameters.
+	// The authority is hard-coded to the Cosmos SDK x/gov module account
+	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
 type msgClient struct {
@@ -325,6 +467,15 @@ func (c *msgClient) ConvertERC20(ctx context.Context, in *MsgConvertERC20, opts 
 	return out, nil
 }
 
+func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error) {
+	out := new(MsgUpdateParamsResponse)
+	err := c.cc.Invoke(ctx, "/evmos.erc20.v1.Msg/UpdateParams", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// ConvertCoin mints a ERC20 representation of the native Cosmos coin denom
@@ -333,17 +484,24 @@ type MsgServer interface {
 	// ConvertERC20 mints a native Cosmos coin representation of the ERC20 token
 	// contract that is registered on the token mapping.
 	ConvertERC20(context.Context, *MsgConvertERC20) (*MsgConvertERC20Response, error)
+	// UpdateParams defined a governance operation for updating the x/erc20 module parameters.
+	// The authority is hard-coded to the Cosmos SDK x/gov module account
+	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
-type UnimplementedMsgServer struct {
-}
+type UnimplementedMsgServer struct{}
 
 func (*UnimplementedMsgServer) ConvertCoin(ctx context.Context, req *MsgConvertCoin) (*MsgConvertCoinResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConvertCoin not implemented")
 }
+
 func (*UnimplementedMsgServer) ConvertERC20(ctx context.Context, req *MsgConvertERC20) (*MsgConvertERC20Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConvertERC20 not implemented")
+}
+
+func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -386,6 +544,24 @@ func _Msg_ConvertERC20_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdateParams(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/evmos.erc20.v1.Msg/UpdateParams",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UpdateParams(ctx, req.(*MsgUpdateParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "evmos.erc20.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -397,6 +573,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ConvertERC20",
 			Handler:    _Msg_ConvertERC20_Handler,
+		},
+		{
+			MethodName: "UpdateParams",
+			Handler:    _Msg_UpdateParams_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -550,6 +730,69 @@ func (m *MsgConvertERC20Response) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgUpdateParams) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateParams) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpdateParamsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateParamsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -561,6 +804,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *MsgConvertCoin) Size() (n int) {
 	if m == nil {
 		return 0
@@ -621,12 +865,38 @@ func (m *MsgConvertERC20Response) Size() (n int) {
 	return n
 }
 
+func (m *MsgUpdateParams) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.Params.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgUpdateParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *MsgConvertCoin) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -774,6 +1044,7 @@ func (m *MsgConvertCoin) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgConvertCoinResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -824,6 +1095,7 @@ func (m *MsgConvertCoinResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgConvertERC20) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1004,6 +1276,7 @@ func (m *MsgConvertERC20) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgConvertERC20Response) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1054,6 +1327,174 @@ func (m *MsgConvertERC20Response) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *MsgUpdateParams) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateParams: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateParams: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateParamsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func skipTx(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

@@ -12,12 +12,13 @@ import (
 	tmversion "github.com/tendermint/tendermint/proto/tendermint/version"
 	"github.com/tendermint/tendermint/version"
 
-	"github.com/tharsis/ethermint/tests"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
+	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	"github.com/evmos/evmos/v12/utils"
+	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
 
-	"github.com/tharsis/evmos/v4/app"
-	"github.com/tharsis/evmos/v4/x/recovery"
-	"github.com/tharsis/evmos/v4/x/recovery/types"
+	"github.com/evmos/evmos/v12/app"
+	"github.com/evmos/evmos/v12/x/recovery"
+	"github.com/evmos/evmos/v12/x/recovery/types"
 )
 
 type GenesisTestSuite struct {
@@ -31,12 +32,12 @@ type GenesisTestSuite struct {
 
 func (suite *GenesisTestSuite) SetupTest() {
 	// consensus key
-	consAddress := sdk.ConsAddress(tests.GenerateAddress().Bytes())
+	consAddress := sdk.ConsAddress(utiltx.GenerateAddress().Bytes())
 
 	suite.app = app.Setup(false, feemarkettypes.DefaultGenesisState())
 	suite.ctx = suite.app.BaseApp.NewContext(false, tmproto.Header{
 		Height:          1,
-		ChainID:         "evmos_9000-1",
+		ChainID:         utils.TestnetChainID + "-1",
 		Time:            time.Now().UTC(),
 		ProposerAddress: consAddress.Bytes(),
 

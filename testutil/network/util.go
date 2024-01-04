@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package network
 
 import (
@@ -25,11 +41,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	inflationtypes "github.com/tharsis/evmos/v4/x/inflation/types"
+	inflationtypes "github.com/evmos/evmos/v12/x/inflation/types"
 
-	"github.com/tharsis/ethermint/server"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	"github.com/evmos/evmos/v12/server"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 )
 
 func startInProcess(cfg Config, val *Validator) error {
@@ -107,7 +124,7 @@ func startInProcess(cfg Config, val *Validator) error {
 	}
 
 	if val.AppConfig.GRPC.Enable {
-		grpcSrv, err := servergrpc.StartGRPCServer(val.ClientCtx, app, val.AppConfig.GRPC.Address)
+		grpcSrv, err := servergrpc.StartGRPCServer(val.ClientCtx, app, val.AppConfig.GRPC)
 		if err != nil {
 			return err
 		}
@@ -130,7 +147,7 @@ func startInProcess(cfg Config, val *Validator) error {
 		tmEndpoint := "/websocket"
 		tmRPCAddr := fmt.Sprintf("tcp://%s", val.AppConfig.GRPC.Address)
 
-		val.jsonrpc, val.jsonrpcDone, err = server.StartJSONRPC(val.Ctx, val.ClientCtx, tmRPCAddr, tmEndpoint, *val.AppConfig)
+		val.jsonrpc, val.jsonrpcDone, err = server.StartJSONRPC(val.Ctx, val.ClientCtx, tmRPCAddr, tmEndpoint, val.AppConfig, nil)
 		if err != nil {
 			return err
 		}
@@ -205,7 +222,7 @@ func initGenFiles(cfg Config, genAccounts []authtypes.GenesisAccount, genBalance
 	stakingGenState.Params.BondDenom = cfg.BondDenom
 	cfg.GenesisState[stakingtypes.ModuleName] = cfg.Codec.MustMarshalJSON(&stakingGenState)
 
-	var govGenState govtypes.GenesisState
+	var govGenState govv1.GenesisState
 	cfg.Codec.MustUnmarshalJSON(cfg.GenesisState[govtypes.ModuleName], &govGenState)
 
 	govGenState.DepositParams.MinDeposit[0].Denom = cfg.BondDenom

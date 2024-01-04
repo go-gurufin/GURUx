@@ -9,8 +9,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/stretchr/testify/require"
 
-	"github.com/tharsis/evmos/v4/app"
-	evmosd "github.com/tharsis/evmos/v4/cmd/evmosd"
+	"github.com/evmos/evmos/v12/app"
+	evmosd "github.com/evmos/evmos/v12/cmd/evmosd"
+	"github.com/evmos/evmos/v12/utils"
 )
 
 func TestInitCmd(t *testing.T) {
@@ -19,10 +20,10 @@ func TestInitCmd(t *testing.T) {
 		"init",       // Test the init cmd
 		"evmos-test", // Moniker
 		fmt.Sprintf("--%s=%s", cli.FlagOverwrite, "true"), // Overwrite genesis.json, in case it already exists
-		fmt.Sprintf("--%s=%s", flags.FlagChainID, "evmos_9000-1"),
+		fmt.Sprintf("--%s=%s", flags.FlagChainID, utils.TestnetChainID+"-1"),
 	})
 
-	err := svrcmd.Execute(rootCmd, app.DefaultNodeHome)
+	err := svrcmd.Execute(rootCmd, "evmosd", app.DefaultNodeHome)
 	require.NoError(t, err)
 }
 
@@ -31,10 +32,10 @@ func TestAddKeyLedgerCmd(t *testing.T) {
 	rootCmd.SetArgs([]string{
 		"keys",
 		"add",
-		"mykey",
+		"dev0",
 		fmt.Sprintf("--%s", flags.FlagUseLedger),
 	})
 
-	err := svrcmd.Execute(rootCmd, app.DefaultNodeHome)
+	err := svrcmd.Execute(rootCmd, "EVMOSD", app.DefaultNodeHome)
 	require.Error(t, err)
 }

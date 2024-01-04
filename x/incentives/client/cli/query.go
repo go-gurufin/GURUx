@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package cli
 
 import (
@@ -9,7 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 
-	"github.com/tharsis/evmos/v4/x/incentives/types"
+	"github.com/evmos/evmos/v12/x/incentives/types"
 )
 
 // GetQueryCmd returns the parent command for all incentives CLI query commands.
@@ -74,7 +90,7 @@ func GetIncentivesCmd() *cobra.Command {
 // GetIncentiveCmd queries a given contract incentive
 func GetIncentiveCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "incentive [contract-address]",
+		Use:   "incentive CONTRACT_ADDRESS",
 		Short: "Gets incentive for a given contract",
 		Long:  "Gets incentive for a given contract",
 		Args:  cobra.ExactArgs(1),
@@ -110,7 +126,7 @@ func GetIncentiveCmd() *cobra.Command {
 // GetGasMetersCmd queries the list of incentives
 func GetGasMetersCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "gas-meters [contract-address]",
+		Use:   "gas-meters CONTRACT_ADDRESS",
 		Short: "Gets gas meters for a given incentive",
 		Long:  "Gets gas meters for a given incentive",
 		Args:  cobra.ExactArgs(1),
@@ -152,7 +168,7 @@ func GetGasMetersCmd() *cobra.Command {
 // GetGasMeterCmd queries the list of incentives
 func GetGasMeterCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "gas-meter [contract-address] [participant-address]",
+		Use:   "gas-meter CONTRACT_ADDRESS PARTICIPANT_ADDRESS",
 		Short: "Gets gas meter for a given incentive and user",
 		Long:  "Gets gas meter for a given incentive and user",
 		Args:  cobra.ExactArgs(2),
@@ -230,7 +246,7 @@ func GetAllocationMetersCmd() *cobra.Command {
 // GetAllocationMeterCmd queries a given denom allocation meter
 func GetAllocationMeterCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "allocation-meter [denom]",
+		Use:   "allocation-meter DENOM",
 		Short: "Gets allocation meter for a denom",
 		Long:  "Gets allocation meter for a denom",
 		Args:  cobra.ExactArgs(1),

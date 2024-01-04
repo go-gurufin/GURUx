@@ -3,11 +3,12 @@ package keeper_test
 import (
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/tharsis/ethermint/tests"
-	"github.com/tharsis/evmos/v4/testutil"
-	"github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/evmos/evmos/v12/testutil"
+	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	"github.com/evmos/evmos/v12/x/claims/types"
 )
 
 func (suite *KeeperTestSuite) TestTotalUnclaimed() {
@@ -25,7 +26,7 @@ func (suite *KeeperTestSuite) TestTotalUnclaimed() {
 		{
 			"non-empty balance",
 			func() {
-				err := testutil.FundModuleAccount(suite.app.BankKeeper, suite.ctx, types.ModuleName, coins)
+				err := testutil.FundModuleAccount(suite.ctx, suite.app.BankKeeper, types.ModuleName, coins)
 				suite.Require().NoError(err)
 			}, coins,
 		},
@@ -54,14 +55,14 @@ func (suite *KeeperTestSuite) TestQueryParams() {
 func (suite *KeeperTestSuite) TestClaimsRecords() {
 	ctx := sdk.WrapSDKContext(suite.ctx)
 
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 
 	testCases := []struct {
 		name          string
 		malleate      func()
 		expErr        bool
 		recordsAmount int
-		initialAmount sdk.Int
+		initialAmount math.Int
 		actions       []bool
 	}{
 		{
@@ -111,7 +112,7 @@ func (suite *KeeperTestSuite) TestClaimsRecords() {
 		if tc.expErr {
 			suite.Require().Error(err)
 		} else {
-			if tc.recordsAmount == 0 {
+			if tc.recordsAmount == 0 { //nolint:gocritic
 				suite.Require().NoError(err)
 			} else if tc.recordsAmount == 1 {
 				suite.Require().NoError(err)
@@ -134,7 +135,7 @@ func (suite *KeeperTestSuite) TestClaimsRecord() {
 	ctx := sdk.WrapSDKContext(suite.ctx)
 
 	req := &types.QueryClaimsRecordRequest{}
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 
 	testCases := []struct {
 		name     string
@@ -189,7 +190,7 @@ func (suite *KeeperTestSuite) TestClaimsRecord() {
 			func() {
 				params := suite.app.ClaimsKeeper.GetParams(suite.ctx)
 				params.EnableClaims = false
-				suite.app.ClaimsKeeper.SetParams(suite.ctx, params)
+				suite.app.ClaimsKeeper.SetParams(suite.ctx, params) //nolint:errcheck
 				claimsRecord := types.NewClaimsRecord(sdk.NewInt(1_000_000_000_000))
 				suite.app.ClaimsKeeper.SetClaimsRecord(suite.ctx, addr, claimsRecord)
 				req = &types.QueryClaimsRecordRequest{
@@ -203,7 +204,8 @@ func (suite *KeeperTestSuite) TestClaimsRecord() {
 			func() {
 				params := suite.app.ClaimsKeeper.GetParams(suite.ctx)
 				params.AirdropStartTime = time.Now().Add(time.Hour * 24)
-				suite.app.ClaimsKeeper.SetParams(suite.ctx, params)
+				err := suite.app.ClaimsKeeper.SetParams(suite.ctx, params)
+				suite.Require().NoError(err)
 				claimsRecord := types.NewClaimsRecord(sdk.NewInt(1_000_000_000_000))
 				suite.app.ClaimsKeeper.SetClaimsRecord(suite.ctx, addr, claimsRecord)
 				req = &types.QueryClaimsRecordRequest{

@@ -5,11 +5,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/tharsis/ethermint/tests"
-	"github.com/tharsis/evmos/v4/x/incentives/types"
+	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	"github.com/evmos/evmos/v12/x/incentives/types"
 )
 
-func (suite KeeperTestSuite) TestRegisterIncentive() {
+func (suite KeeperTestSuite) TestRegisterIncentive() { //nolint:govet // we can copy locks here because it is a test
 	testCases := []struct {
 		name                string
 		malleate            func()
@@ -21,7 +21,7 @@ func (suite KeeperTestSuite) TestRegisterIncentive() {
 			func() {
 				params := types.DefaultParams()
 				params.EnableIncentives = false
-				suite.app.IncentivesKeeper.SetParams(suite.ctx, params)
+				suite.app.IncentivesKeeper.SetParams(suite.ctx, params) //nolint:errcheck
 			},
 			[]sdk.DecCoin{},
 			false,
@@ -29,7 +29,7 @@ func (suite KeeperTestSuite) TestRegisterIncentive() {
 		{
 			"contract doesn't exist",
 			func() {
-				contract = tests.GenerateAddress()
+				contract = utiltx.GenerateAddress()
 			},
 			[]sdk.DecCoin{},
 			false,
@@ -65,7 +65,7 @@ func (suite KeeperTestSuite) TestRegisterIncentive() {
 				// decrease allocation limit
 				params := types.DefaultParams()
 				params.AllocationLimit = sdk.NewDecWithPrec(1, 2)
-				suite.app.IncentivesKeeper.SetParams(suite.ctx, params)
+				suite.app.IncentivesKeeper.SetParams(suite.ctx, params) //nolint:errcheck
 			},
 			[]sdk.DecCoin{},
 			false,
@@ -84,7 +84,8 @@ func (suite KeeperTestSuite) TestRegisterIncentive() {
 				// increase allocation limit
 				params := types.DefaultParams()
 				params.AllocationLimit = sdk.NewDecWithPrec(100, 2)
-				suite.app.IncentivesKeeper.SetParams(suite.ctx, params)
+				err = suite.app.IncentivesKeeper.SetParams(suite.ctx, params)
+				suite.Require().NoError(err)
 
 				// Add incentive which takes up 100% of the allocation
 				_, err = suite.app.IncentivesKeeper.RegisterIncentive(
@@ -119,6 +120,7 @@ func (suite KeeperTestSuite) TestRegisterIncentive() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
 			suite.SetupTest() // reset
+			suite.deployContracts()
 
 			tc.malleate()
 
@@ -150,7 +152,7 @@ func (suite KeeperTestSuite) TestRegisterIncentive() {
 	}
 }
 
-func (suite KeeperTestSuite) TestCancelIncentive() {
+func (suite KeeperTestSuite) TestCancelIncentive() { //nolint:govet // we can copy locks here because it is a test
 	testCases := []struct {
 		name                string
 		malleate            func()
@@ -162,7 +164,7 @@ func (suite KeeperTestSuite) TestCancelIncentive() {
 			func() {
 				params := types.DefaultParams()
 				params.EnableIncentives = false
-				suite.app.IncentivesKeeper.SetParams(suite.ctx, params)
+				suite.app.IncentivesKeeper.SetParams(suite.ctx, params) //nolint:errcheck
 			},
 			[]sdk.DecCoin{},
 			false,
@@ -196,6 +198,7 @@ func (suite KeeperTestSuite) TestCancelIncentive() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
 			suite.SetupTest() // reset
+			suite.deployContracts()
 
 			tc.malleate()
 

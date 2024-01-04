@@ -11,8 +11,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	sdkvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
-	"github.com/tharsis/ethermint/tests"
-	"github.com/tharsis/evmos/v4/x/vesting/types"
+	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	"github.com/evmos/evmos/v12/x/vesting/types"
 )
 
 var (
@@ -38,7 +38,7 @@ func TestVestingAccountSuite(t *testing.T) {
 }
 
 func (suite *VestingAccountTestSuite) TestClawbackAccountNew() {
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	baseAcc := authtypes.NewBaseAccountWithAddress(addr)
 	initialVesting := sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 50))
 
@@ -146,7 +146,7 @@ func (suite *VestingAccountTestSuite) TestClawbackAccountNew() {
 func (suite *VestingAccountTestSuite) TestGetVestedVestingLockedCoins() {
 	now := tmtime.Now()
 	endTime := now.Add(24 * time.Hour)
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	bacc := authtypes.NewBaseAccountWithAddress(addr)
 	va := types.NewClawbackVestingAccount(bacc, sdk.AccAddress([]byte("funder")), origCoins, now, lockupPeriods, vestingPeriods)
 
@@ -230,7 +230,7 @@ func (suite *VestingAccountTestSuite) TestGetVestedVestingLockedCoins() {
 func (suite *VestingAccountTestSuite) TestGetVestedUnvestedLockedOnly() {
 	now := tmtime.Now()
 	endTime := now.Add(24 * time.Hour)
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	bacc := authtypes.NewBaseAccountWithAddress(addr)
 	va := types.NewClawbackVestingAccount(bacc, sdk.AccAddress([]byte("funder")), origCoins, now, lockupPeriods, vestingPeriods)
 
@@ -438,12 +438,12 @@ func (suite *VestingAccountTestSuite) TestTrackDelegationUndelegation() {
 
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
-			addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+			addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 			bacc := authtypes.NewBaseAccountWithAddress(addr)
 
 			va := types.NewClawbackVestingAccount(bacc, sdk.AccAddress([]byte("funder")), origCoins, now, lockupPeriods, vestingPeriods)
 
-			if tc.expDelegationPanic {
+			if tc.expDelegationPanic { //nolint:gocritic
 				suite.Require().Panics(func() {
 					tc.delegate(va)
 				})
@@ -525,7 +525,7 @@ func (suite *VestingAccountTestSuite) TestComputeClawback() {
 
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
-			addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+			addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 			bacc := authtypes.NewBaseAccountWithAddress(addr)
 			va := types.NewClawbackVestingAccount(bacc, sdk.AccAddress([]byte("funder")), origCoins, now, lockupPeriods, vestingPeriods)
 
