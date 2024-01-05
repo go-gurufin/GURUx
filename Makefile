@@ -7,15 +7,17 @@ TMVERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::'
 # COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
-EVMOS_BINARY = evmosd
+EVMOS_BINARY = gurux
 EVMOS_DIR = evmos
-BUILDDIR ?= $(CURDIR)/build
+# BUILDDIR ?= $(CURDIR)/build
+BUILDDIR ?= ./build
 HTTPS_GIT := https://github.com/evmos/evmos.git
 DOCKER := $(shell which docker)
 NAMESPACE := tharsishq
 PROJECT := evmos
 DOCKER_IMAGE := $(NAMESPACE)/$(PROJECT)
-DOCKER_TAG := $(COMMIT_HASH)
+# DOCKER_TAG := $(COMMIT_HASH)
+DOCKER_TAG := uptest
 # e2e env
 MOUNT_PATH := $(shell pwd)/build/:/root/
 E2E_SKIP_CLEANUP := false
@@ -61,12 +63,13 @@ build_tags := $(strip $(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=evmos \
-          -X github.com/cosmos/cosmos-sdk/version.AppName=$(EVMOS_BINARY) \
-          -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-          -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-          -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION)
+# ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=evmos \
+#           -X github.com/cosmos/cosmos-sdk/version.AppName=$(EVMOS_BINARY) \
+#           -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+#           -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+#           -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION)
 
+# ldflags = -X
 # DB backend selection
 ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
