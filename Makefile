@@ -5,6 +5,7 @@ PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation')
 TMVERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 # COMMIT := $(shell git log -1 --format='%H')
 # COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
+# COSMOS_BUILD_OPTIONS=rocksdb make install
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 EVMOS_BINARY = gurux
@@ -68,6 +69,12 @@ build_tags := $(strip $(build_tags))
 #           -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 #           -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 #           -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION)
+
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=gurux \
+          -X github.com/cosmos/cosmos-sdk/version.AppName=gurux \
+          -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+          -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+          -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION)
 
 # ldflags = -X
 # DB backend selection
