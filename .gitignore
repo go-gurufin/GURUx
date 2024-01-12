@@ -21,8 +21,11 @@ vendor
 build
 build/*
 conf
+conf/*
 conf/gfin_evmos_dev01
+conf/gfin_evmos_dev01/*
 conf/gfin_evmos_dev02
+conf/gfin_evmos_dev02/*
 bin
 tools/bin/*
 docs/_build
