@@ -1,14 +1,11 @@
 #!/usr/bin/make -f
 
 PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation')
-# VERSION ?= $(shell echo $(shell git describe --tags --always) | sed 's/^v//')
 TMVERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
-# COMMIT := $(shell git log -1 --format='%H')
-# COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
-# COSMOS_BUILD_OPTIONS=rocksdb make install
+
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
-EVMOS_BINARY = gurux
+EVMOS_BINARY = evmosd
 EVMOS_DIR = evmos
 # BUILDDIR ?= $(CURDIR)/build
 BUILDDIR ?= ./build
@@ -63,13 +60,6 @@ build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
 # process linker flags
-
-# ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=evmos \
-#           -X github.com/cosmos/cosmos-sdk/version.AppName=$(EVMOS_BINARY) \
-#           -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-#           -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-#           -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION)
-
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=gurux \
           -X github.com/cosmos/cosmos-sdk/version.AppName=gurux \
           -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \

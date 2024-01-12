@@ -19,6 +19,9 @@
 .glide/
 vendor
 build
+build/*
+conf
+conf/*
 bin
 tools/bin/*
 docs/_build
