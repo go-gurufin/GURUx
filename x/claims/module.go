@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package claims
 
 import (
@@ -17,9 +33,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/tharsis/evmos/v4/x/claims/client/cli"
-	"github.com/tharsis/evmos/v4/x/claims/keeper"
-	"github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/evmos/evmos/v12/x/claims/client/cli"
+	"github.com/evmos/evmos/v12/x/claims/keeper"
+	"github.com/evmos/evmos/v12/x/claims/types"
 )
 
 var (
@@ -45,11 +61,12 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {
 }
 
 // RegisterInterfaces registers the module's interface types
-func (AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
+func (AppModuleBasic) RegisterInterfaces(interfaceRegistry cdctypes.InterfaceRegistry) {
+	types.RegisterInterfaces(interfaceRegistry)
 }
 
 // DefaultGenesis returns the claim module's default genesis state.
@@ -58,7 +75,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the claim module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var genState types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
@@ -67,7 +84,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 }
 
 // RegisterRESTRoutes registers the claim module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -93,14 +110,16 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements the AppModule interface for the claim module.
 type AppModule struct {
 	AppModuleBasic
-
 	keeper keeper.Keeper
+	// legacySubspace is used solely for migration of x/params managed parameters
+	legacySubspace types.Subspace
 }
 
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, legacySubspace types.Subspace) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
+		legacySubspace: legacySubspace,
 	}
 }
 
@@ -111,7 +130,7 @@ func (am AppModule) Name() string {
 
 // Route returns the claim module's message routing key.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
+	return sdk.NewRoute(types.RouterKey, NewHandler(&am.keeper))
 }
 
 // QuerierRoute returns the claim module's query routing key.
@@ -126,12 +145,11 @@ func (AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-
-	migrator := keeper.NewMigrator(am.keeper)
-
-	// register v1 -> v2 migration
-	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
-		panic(fmt.Errorf("failed to migrate %s to v2: %w", types.ModuleName, err))
+	types.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	m := keeper.NewMigrator(am.keeper, am.legacySubspace)
+	err := cfg.RegisterMigration(types.ModuleName, 2, m.Migrate2to3)
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -169,4 +187,4 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
-func (AppModule) ConsensusVersion() uint64 { return 2 }
+func (AppModule) ConsensusVersion() uint64 { return 3 }

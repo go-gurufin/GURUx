@@ -1,10 +1,28 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/evmos/evmos/v12/x/claims/types"
 )
 
 // ClaimCoinsForAction removes the claimable amount entry from a claims record
@@ -15,9 +33,9 @@ func (k Keeper) ClaimCoinsForAction(
 	claimsRecord types.ClaimsRecord,
 	action types.Action,
 	params types.Params,
-) (sdk.Int, error) {
+) (math.Int, error) {
 	if action == types.ActionUnspecified || action > types.ActionIBCTransfer {
-		return sdk.ZeroInt(), sdkerrors.Wrapf(types.ErrInvalidAction, "%d", action)
+		return sdk.ZeroInt(), errorsmod.Wrapf(types.ErrInvalidAction, "%d", action)
 	}
 
 	// If we are before the start time, after end time, or claims are disabled, do nothing.
@@ -79,8 +97,8 @@ func (k Keeper) ClaimCoinsForAction(
 // from both records.
 
 // This method additionally:
-//  - Always claims the IBC action, assuming both record haven't claimed it.
-//  - Marks an action as claimed for the new instance by performing an XOR operation between the 2 provided records: `merged completed action = sender completed action XOR recipient completed action`
+//   - Always claims the IBC action, assuming both record haven't claimed it.
+//   - Marks an action as claimed for the new instance by performing an XOR operation between the 2 provided records: `merged completed action = sender completed action XOR recipient completed action`
 func (k Keeper) MergeClaimsRecords(
 	ctx sdk.Context,
 	recipient sdk.AccAddress,
@@ -104,7 +122,7 @@ func (k Keeper) MergeClaimsRecords(
 		//  - the sender is not an evmos address and can't claim vote, delegation or evm actions
 		//  - the first attempt to perform an ibc callback from the senders account will merge/migrate the entire claims record
 		if senderClaimsRecord.HasClaimedAction(action) {
-			return types.ClaimsRecord{}, sdkerrors.Wrapf(sdkerrors.ErrNotSupported, "non-evmos sender must not have claimed action: %v", action)
+			return types.ClaimsRecord{}, errorsmod.Wrapf(errortypes.ErrNotSupported, "non-evmos sender must not have claimed action: %v", action)
 		}
 
 		recipientCompleted := recipientClaimsRecord.HasClaimedAction(action)
@@ -172,7 +190,7 @@ func (k Keeper) GetClaimableAmountForAction(
 	claimsRecord types.ClaimsRecord,
 	action types.Action,
 	params types.Params,
-) (claimableCoins, remainder sdk.Int) {
+) (claimableCoins, remainder math.Int) {
 	// check if the entire airdrop has completed. This shouldn't occur since at
 	// the end of the airdrop, the EnableClaims param is disabled.
 	if !params.IsClaimsActive(ctx.BlockTime()) {
@@ -189,7 +207,7 @@ func (k Keeper) ClaimableAmountForAction(
 	claimsRecord types.ClaimsRecord,
 	action types.Action,
 	params types.Params,
-) (claimableCoins, remainder sdk.Int) {
+) (claimableCoins, remainder math.Int) {
 	// return zero if there are no coins to claim
 	if claimsRecord.InitialClaimableAmount.IsNil() || claimsRecord.InitialClaimableAmount.IsZero() {
 		return sdk.ZeroInt(), sdk.ZeroInt()
@@ -221,7 +239,7 @@ func (k Keeper) ClaimableAmountForAction(
 	claimableRatio := sdk.OneDec().Sub(elapsedDecayRatio)
 
 	// calculate the claimable coins, while rounding the decimals
-	claimableCoins = initialClaimablePerAction.ToDec().Mul(claimableRatio).RoundInt()
+	claimableCoins = claimableRatio.MulInt(initialClaimablePerAction).RoundInt()
 	remainder = initialClaimablePerAction.Sub(claimableCoins)
 	return claimableCoins, remainder
 }

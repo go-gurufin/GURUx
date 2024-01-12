@@ -12,10 +12,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	ethermint "github.com/tharsis/ethermint/types"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	evmostypes "github.com/evmos/evmos/v12/types"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 
-	"github.com/tharsis/evmos/v4/x/incentives/types"
+	"github.com/evmos/evmos/v12/x/incentives/types"
 )
 
 var _ = Describe("Performing EVM transactions", Ordered, func() {
@@ -24,7 +24,7 @@ var _ = Describe("Performing EVM transactions", Ordered, func() {
 
 		params := s.app.Erc20Keeper.GetParams(s.ctx)
 		params.EnableEVMHook = false
-		s.app.Erc20Keeper.SetParams(s.ctx, params)
+		s.app.Erc20Keeper.SetParams(s.ctx, params) //nolint:errcheck
 	})
 
 	// Epoch mechanism for triggering allocation and distribution
@@ -39,7 +39,8 @@ var _ = Describe("Performing EVM transactions", Ordered, func() {
 		BeforeEach(func() {
 			params := s.app.Erc20Keeper.GetParams(s.ctx)
 			params.EnableEVMHook = true
-			s.app.Erc20Keeper.SetParams(s.ctx, params)
+			err := s.app.Erc20Keeper.SetParams(s.ctx, params)
+			Expect(err).To(BeNil())
 		})
 		It("should be successful", func() {
 			_, err := s.DeployContract("coin", "token", erc20Decimals)
@@ -58,16 +59,20 @@ var _ = Describe("Distribution", Ordered, func() {
 
 	BeforeEach(func() {
 		s.SetupTest()
+		s.deployContracts()
+
+		initialBalance := s.app.BankKeeper.GetBalance(s.ctx, s.address.Bytes(), denomMint)
 
 		// Enable Inflation
 		params := s.app.InflationKeeper.GetParams(s.ctx)
 		params.EnableInflation = true
-		s.app.InflationKeeper.SetParams(s.ctx, params)
+		err := s.app.InflationKeeper.SetParams(s.ctx, params)
+		s.Require().NoError(err)
 
 		// set a EOA account for the address
-		eoa := &ethermint.EthAccount{
+		eoa := &evmostypes.EthAccount{
 			BaseAccount: authtypes.NewBaseAccount(sdk.AccAddress(s.address.Bytes()), nil, 0, 0),
-			CodeHash:    common.Bytes2Hex(evmtypes.EmptyCodeHash),
+			CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).String(),
 		}
 		s.app.AccountKeeper.RemoveAccount(s.ctx, eoa)
 		s.app.AccountKeeper.SetAccount(s.ctx, eoa)
@@ -75,15 +80,15 @@ var _ = Describe("Distribution", Ordered, func() {
 		acc := s.app.AccountKeeper.GetAccount(s.ctx, s.address.Bytes())
 		s.Require().NotNil(acc)
 
-		ethAccount, ok := acc.(ethermint.EthAccountI)
+		ethAccount, ok := acc.(evmostypes.EthAccountI)
 		s.Require().True(ok)
-		s.Require().Equal(ethermint.AccountTypeEOA, ethAccount.Type())
+		s.Require().Equal(evmostypes.AccountTypeEOA, ethAccount.Type())
 
 		contractAddr = contract
 		moduleAcc = s.app.AccountKeeper.GetModuleAddress(types.ModuleName)
 		participantAcc = acc.GetAddress()
 		// Create incentive
-		_, err := s.app.IncentivesKeeper.RegisterIncentive(
+		_, err = s.app.IncentivesKeeper.RegisterIncentive(
 			s.ctx,
 			contractAddr,
 			mintAllocations,
@@ -95,9 +100,9 @@ var _ = Describe("Distribution", Ordered, func() {
 		amount := big.NewInt(100)
 		s.MintERC20Token(contractAddr, s.address, s.address, amount)
 
-		// Check if participant account has zero balance
+		// Check if participant account has the corresponding initial balance
 		balanceBefore = s.app.BankKeeper.GetBalance(s.ctx, participantAcc, denomMint)
-		s.Require().True(balanceBefore.IsZero())
+		s.Require().True(balanceBefore.Sub(initialBalance).IsZero())
 
 		// Check if module account has zero balance
 		moduleBalance := s.app.BankKeeper.GetBalance(s.ctx, moduleAcc, denomMint)
@@ -105,7 +110,7 @@ var _ = Describe("Distribution", Ordered, func() {
 	})
 
 	// Epoch mechanism for triggering allocation and distribution
-	Describe("Commiting a block", func() {
+	Describe("Committing a block", func() {
 		Context("before a weekly epoch ends", func() {
 			BeforeEach(func() {
 				s.CommitAfter(time.Minute)                // Start Epoch

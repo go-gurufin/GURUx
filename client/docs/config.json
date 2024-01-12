@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Gurux - gRPC Gateway docs",
+    "title": "Gurux Chain - gRPC Gateway docs",
     "description": "A REST interface for state queries and transactions",
     "version": "1.0.0"
   },
@@ -65,7 +65,8 @@
       "url": "./tmp-swagger-gen/ethermint/feemarket/v1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "FeeMarketParams"
+          "Params": "FeeMarketParams",
+          "BaseFee": "FeeMarketBaseFee"
         }
       }
     },
@@ -146,6 +147,21 @@
       }
     },
     {
+      "url": "./tmp-swagger-gen/cosmos/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GovV1Params",
+          "Proposal": "GovV1Proposal",
+          "Proposals": "GovV1Proposal",
+          "Vote": "GovV1Vote",
+          "Votes": "GovV1Votes",
+          "Deposit": "GovV1Deposit",
+          "Deposits": "GovV1Deposit",
+          "TallyResult": "GovV1TallyResult"
+        }
+      }
+    },
+    {
       "url": "./tmp-swagger-gen/cosmos/slashing/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
@@ -158,6 +174,20 @@
       "operationIds": {
         "rename": {
           "Params": "StakingParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json",
+      "dereference": {
+        "circular": "ignore"
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/base/tendermint/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "BaseParams"
         }
       }
     }

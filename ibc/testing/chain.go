@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package ibctesting
 
 import (
@@ -14,13 +30,14 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	ibcgotesting "github.com/cosmos/ibc-go/v3/testing"
-	"github.com/cosmos/ibc-go/v3/testing/mock"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	ibcgotesting "github.com/cosmos/ibc-go/v6/testing"
+	"github.com/cosmos/ibc-go/v6/testing/mock"
 
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
-	ethermint "github.com/tharsis/ethermint/types"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
+	evmostypes "github.com/evmos/evmos/v12/types"
+	"github.com/evmos/evmos/v12/utils"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 )
 
 // ChainIDPrefix defines the default chain ID prefix for Evmos test chains
@@ -47,7 +64,8 @@ func NewTestChain(t *testing.T, coord *ibcgotesting.Coordinator, chainID string)
 	// create validator set with single validator
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
-	signers := []tmtypes.PrivValidator{privVal}
+	signers := make(map[string]tmtypes.PrivValidator)
+	signers[pubKey.Address().String()] = privVal
 
 	// generate genesis account
 	senderPrivKey, err := ethsecp256k1.GenerateKey()
@@ -57,16 +75,16 @@ func NewTestChain(t *testing.T, coord *ibcgotesting.Coordinator, chainID string)
 
 	baseAcc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
 
-	acc := &ethermint.EthAccount{
+	acc := &evmostypes.EthAccount{
 		BaseAccount: baseAcc,
 		CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
 	}
 
-	amount := sdk.TokensFromConsensusPower(1, ethermint.PowerReduction)
+	amount := sdk.TokensFromConsensusPower(1, evmostypes.PowerReduction)
 
 	balance := banktypes.Balance{
 		Address: acc.GetAddress().String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, amount)),
+		Coins:   sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, amount)),
 	}
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, chainID, balance)
@@ -94,6 +112,7 @@ func NewTestChain(t *testing.T, coord *ibcgotesting.Coordinator, chainID string)
 		Signers:       signers,
 		SenderPrivKey: senderPrivKey,
 		SenderAccount: acc,
+		NextVals:      valSet,
 	}
 
 	coord.CommitBlock(chain)
@@ -101,8 +120,8 @@ func NewTestChain(t *testing.T, coord *ibcgotesting.Coordinator, chainID string)
 	return chain
 }
 
-func NewTransferPath(chainA, chainB *ibcgotesting.TestChain) *ibcgotesting.Path {
-	path := ibcgotesting.NewPath(chainA, chainB)
+func NewTransferPath(chainA, chainB *ibcgotesting.TestChain) *Path {
+	path := NewPath(chainA, chainB)
 	path.EndpointA.ChannelConfig.PortID = ibcgotesting.TransferPort
 	path.EndpointB.ChannelConfig.PortID = ibcgotesting.TransferPort
 

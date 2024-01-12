@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package main
 
 // DONTCOVER
@@ -34,18 +50,19 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/tharsis/ethermint/crypto/hd"
-	"github.com/tharsis/ethermint/server/config"
-	srvflags "github.com/tharsis/ethermint/server/flags"
+	"github.com/evmos/evmos/v12/crypto/hd"
+	"github.com/evmos/evmos/v12/server/config"
+	srvflags "github.com/evmos/evmos/v12/server/flags"
 
-	ethermint "github.com/tharsis/ethermint/types"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	evmostypes "github.com/evmos/evmos/v12/types"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 
-	cmdcfg "github.com/tharsis/evmos/v4/cmd/config"
-	evmoskr "github.com/tharsis/evmos/v4/crypto/keyring"
-	"github.com/tharsis/evmos/v4/testutil/network"
+	cmdcfg "github.com/evmos/evmos/v12/cmd/config"
+	evmoskr "github.com/evmos/evmos/v12/crypto/keyring"
+	"github.com/evmos/evmos/v12/testutil/network"
 )
 
 var (
@@ -263,7 +280,7 @@ func initTestnetFiles(
 		memo := fmt.Sprintf("%s@%s:26656", nodeIDs[i], ip)
 		genFiles = append(genFiles, nodeConfig.GenesisFile())
 
-		kb, err := keyring.New(sdk.KeyringServiceName(), args.keyringBackend, nodeDir, inBuf, evmoskr.Option())
+		kb, err := keyring.New(sdk.KeyringServiceName(), args.keyringBackend, nodeDir, inBuf, clientCtx.Codec, evmoskr.Option())
 		if err != nil {
 			return err
 		}
@@ -292,18 +309,18 @@ func initTestnetFiles(
 			return err
 		}
 
-		accStakingTokens := sdk.TokensFromConsensusPower(5000, ethermint.PowerReduction)
+		accStakingTokens := sdk.TokensFromConsensusPower(5000, evmostypes.PowerReduction)
 		coins := sdk.Coins{
 			sdk.NewCoin(cmdcfg.BaseDenom, accStakingTokens),
 		}
 
 		genBalances = append(genBalances, banktypes.Balance{Address: addr.String(), Coins: coins.Sort()})
-		genAccounts = append(genAccounts, &ethermint.EthAccount{
+		genAccounts = append(genAccounts, &evmostypes.EthAccount{
 			BaseAccount: authtypes.NewBaseAccount(addr, nil, 0, 0),
 			CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
 		})
 
-		valTokens := sdk.TokensFromConsensusPower(100, ethermint.PowerReduction)
+		valTokens := sdk.TokensFromConsensusPower(100, evmostypes.PowerReduction)
 		createValMsg, err := stakingtypes.NewMsgCreateValidator(
 			sdk.ValAddress(addr),
 			valPubKeys[i],
@@ -345,7 +362,9 @@ func initTestnetFiles(
 
 		customAppTemplate, customAppConfig := config.AppConfig(cmdcfg.BaseDenom)
 		srvconfig.SetConfigTemplate(customAppTemplate)
-		if err := sdkserver.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig); err != nil {
+		customTMConfig := initTendermintConfig()
+
+		if err := sdkserver.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig); err != nil {
 			return err
 		}
 
@@ -404,7 +423,7 @@ func initGenFiles(
 	stakingGenState.Params.BondDenom = coinDenom
 	appGenState[stakingtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&stakingGenState)
 
-	var govGenState govtypes.GenesisState
+	var govGenState govv1.GenesisState
 	clientCtx.Codec.MustUnmarshalJSON(appGenState[govtypes.ModuleName], &govGenState)
 
 	govGenState.DepositParams.MinDeposit[0].Denom = coinDenom

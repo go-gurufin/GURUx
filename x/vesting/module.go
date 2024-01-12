@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package vesting
 
 import (
@@ -18,9 +34,9 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	"github.com/tharsis/evmos/v4/x/vesting/client/cli"
-	"github.com/tharsis/evmos/v4/x/vesting/keeper"
-	"github.com/tharsis/evmos/v4/x/vesting/types"
+	"github.com/evmos/evmos/v12/x/vesting/client/cli"
+	"github.com/evmos/evmos/v12/x/vesting/keeper"
+	"github.com/evmos/evmos/v12/x/vesting/types"
 )
 
 var (
@@ -39,7 +55,9 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the module's types with the given codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	types.RegisterLegacyAminoCodec(cdc)
+}
 
 // RegisterInterfaces registers the module's interfaces and implementations with
 // the given interface registry.
@@ -53,7 +71,7 @@ func (AppModuleBasic) DefaultGenesis(_ codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation. Currently, this is a no-op.
-func (AppModuleBasic) ValidateGenesis(_ codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
+func (AppModuleBasic) ValidateGenesis(_ codec.JSONCodec, _ client.TxEncodingConfig, _ json.RawMessage) error {
 	return nil
 }
 

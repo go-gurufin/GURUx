@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/tharsis/evmos/v4/x/incentives/types"
+	"github.com/evmos/evmos/v12/x/incentives/types"
 )
 
 func (suite *KeeperTestSuite) TestDistributeIncentives() {
@@ -14,6 +14,9 @@ func (suite *KeeperTestSuite) TestDistributeIncentives() {
 		gasUsed      uint64 = 500
 		totalGasUsed uint64 = 1000
 	)
+
+	// check module balance
+	moduleAddr := suite.app.AccountKeeper.GetModuleAddress(types.ModuleName)
 
 	testCases := []struct {
 		name        string
@@ -48,7 +51,7 @@ func (suite *KeeperTestSuite) TestDistributeIncentives() {
 			true,
 		},
 		{
-			"pass - with mint denom and ramaining epochs",
+			"pass - with mint denom and remaining epochs",
 			mintAllocations,
 			epochs,
 			denomMint,
@@ -59,6 +62,7 @@ func (suite *KeeperTestSuite) TestDistributeIncentives() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
 			suite.SetupTest() // reset
+			suite.deployContracts()
 
 			// Mint tokens in module account
 			err := suite.app.BankKeeper.MintCoins(
@@ -79,9 +83,8 @@ func (suite *KeeperTestSuite) TestDistributeIncentives() {
 
 			regIn, found := suite.app.IncentivesKeeper.GetIncentive(suite.ctx, contract)
 			suite.Require().True(found)
+			suite.Require().Zero(regIn.TotalGas)
 
-			// check module balance
-			moduleAddr := suite.app.AccountKeeper.GetModuleAddress(types.ModuleName)
 			balance := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, tc.denom)
 			suite.Require().True(balance.IsPositive())
 
@@ -97,7 +100,7 @@ func (suite *KeeperTestSuite) TestDistributeIncentives() {
 			)
 			suite.Commit()
 
-			err = suite.app.IncentivesKeeper.DistributeIncentives(suite.ctx)
+			err = suite.app.IncentivesKeeper.DistributeRewards(suite.ctx)
 
 			if tc.expPass {
 				suite.Require().NoError(err, tc.name)

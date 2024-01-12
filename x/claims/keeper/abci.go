@@ -1,13 +1,30 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package keeper
 
 import (
 	"strconv"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	vestexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
+	evmostypes "github.com/evmos/evmos/v12/types"
 
-	"github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/evmos/evmos/v12/x/claims/types"
 )
 
 // EndBlocker checks if the airdrop claiming period has ended in order to
@@ -48,7 +65,11 @@ func (k Keeper) EndAirdrop(ctx sdk.Context, params types.Params) error {
 	// set the EnableClaims param to false so that we don't have to compute
 	// duration every block
 	params.EnableClaims = false
-	k.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting params")
+	}
+
 	logger.Info("end EndAirdrop logic")
 	return nil
 }
@@ -67,7 +88,7 @@ func (k Keeper) ClawbackEscrowedTokens(ctx sdk.Context) error {
 	}
 
 	if err := k.distrKeeper.FundCommunityPool(ctx, balances, moduleAccAddr); err != nil {
-		return sdkerrors.Wrap(err, "failed to transfer escrowed airdrop tokens")
+		return errorsmod.Wrap(err, "failed to transfer escrowed airdrop tokens")
 	}
 
 	logger.Info(
@@ -112,6 +133,11 @@ func (k Keeper) ClawbackEmptyAccounts(ctx sdk.Context, claimsDenom string) {
 			return false
 		}
 
+		// ignore non ETH accounts
+		if _, isEthAccount := acc.(evmostypes.EthAccountI); !isEthAccount {
+			return false
+		}
+
 		seq, err := k.accountKeeper.GetSequence(ctx, addr)
 		if err != nil {
 			logger.Debug(
@@ -125,12 +151,26 @@ func (k Keeper) ClawbackEmptyAccounts(ctx sdk.Context, claimsDenom string) {
 			return false
 		}
 
-		clawbackCoin := k.bankKeeper.GetBalance(ctx, addr, claimsDenom)
+		// get all balances to check if address has balances in other denoms
+		accountBalances := k.bankKeeper.GetAllBalances(ctx, addr)
 
-		// prune empty accounts from the airdrop
-		if clawbackCoin.IsZero() {
+		// only prune empty accounts from the airdrop
+		if accountBalances.IsZero() {
 			k.accountKeeper.RemoveAccount(ctx, acc)
 			accPruned++
+			return false
+		}
+
+		// dust amount sent on genesis
+		dustCoin := sdk.Coin{
+			Amount: sdk.NewInt(types.GenesisDust),
+			Denom:  claimsDenom,
+		}
+
+		// check if acc has claims denom balance and only clawback if the balance is
+		// the same as the initial dust sent on genesis
+		found, clawbackCoin := accountBalances.Find(claimsDenom)
+		if !found || !clawbackCoin.Equal(dustCoin) {
 			return false
 		}
 

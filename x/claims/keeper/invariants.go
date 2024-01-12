@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package keeper
 
 import (
@@ -5,7 +21,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/evmos/evmos/v12/x/claims/types"
 )
 
 // RegisterInvariants registers the claims module invariants
@@ -28,7 +44,7 @@ func (k Keeper) ClaimsInvariant() sdk.Invariant {
 		// iterate over all the claim records and sum the unclaimed amounts
 		k.IterateClaimsRecords(ctx, func(_ sdk.AccAddress, cr types.ClaimsRecord) bool {
 			// IMPORTANT: use Dec to prevent truncation errors
-			initialClaimablePerAction := cr.InitialClaimableAmount.ToDec().Quo(numActions)
+			initialClaimablePerAction := sdk.NewDecFromInt(cr.InitialClaimableAmount).Quo(numActions)
 			for _, actionCompleted := range cr.ActionsCompleted {
 				if !actionCompleted {
 					// NOTE: only add the initial claimable amount per action for the ones that haven't been claimed
@@ -41,14 +57,14 @@ func (k Keeper) ClaimsInvariant() sdk.Invariant {
 		moduleAccAddr := k.GetModuleAccountAddress()
 		balance := k.bankKeeper.GetBalance(ctx, moduleAccAddr, params.ClaimsDenom)
 
-		isInvariantBroken := !expectedUnclaimed.Equal(balance.Amount.ToDec())
+		isInvariantBroken := !expectedUnclaimed.Equal(sdk.NewDecFromInt(balance.Amount))
 		msg = sdk.FormatInvariant(
 			types.ModuleName,
 			"claims",
 			fmt.Sprintf(
 				"\tsum of unclaimed amount: %s\n"+
 					"\tescrowed balance amount: %s\n",
-				expectedUnclaimed, balance.Amount.ToDec(),
+				expectedUnclaimed, sdk.NewDecFromInt(balance.Amount),
 			),
 		)
 

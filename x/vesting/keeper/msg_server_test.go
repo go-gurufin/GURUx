@@ -4,23 +4,26 @@ import (
 	"fmt"
 	"time"
 
+	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
+	evmostypes "github.com/evmos/evmos/v12/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	sdkvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
-	"github.com/tharsis/ethermint/tests"
-	"github.com/tharsis/evmos/v4/testutil"
-	"github.com/tharsis/evmos/v4/x/vesting/types"
+	"github.com/evmos/evmos/v12/testutil"
+	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	"github.com/evmos/evmos/v12/x/vesting/types"
 )
 
 var (
 	balances       = sdk.NewCoins(sdk.NewInt64Coin("test", 1000))
 	quarter        = sdk.NewCoins(sdk.NewInt64Coin("test", 250))
-	addr           = sdk.AccAddress(tests.GenerateAddress().Bytes())
-	addr2          = sdk.AccAddress(tests.GenerateAddress().Bytes())
-	addr3          = sdk.AccAddress(tests.GenerateAddress().Bytes())
-	addr4          = sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr           = sdk.AccAddress(utiltx.GenerateAddress().Bytes())
+	addr2          = sdk.AccAddress(utiltx.GenerateAddress().Bytes())
+	addr3          = sdk.AccAddress(utiltx.GenerateAddress().Bytes())
+	addr4          = sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	lockupPeriods  = sdkvesting.Periods{{Length: 5000, Amount: balances}}
 	vestingPeriods = sdkvesting.Periods{
 		{Length: 2000, Amount: quarter},
@@ -101,7 +104,7 @@ func (suite *KeeperTestSuite) TestMsgCreateClawbackVestingAccount() {
 				baseAccount := authtypes.NewBaseAccountWithAddress(addr2)
 				funder := sdk.AccAddress(types.ModuleName)
 				clawbackAccount := types.NewClawbackVestingAccount(baseAccount, funder, balances, vestingStart, lockupPeriods, vestingPeriods)
-				testutil.FundAccount(s.app.BankKeeper, s.ctx, addr2, balances)
+				testutil.FundAccount(s.ctx, s.app.BankKeeper, addr2, balances) //nolint:errcheck
 				s.app.AccountKeeper.SetAccount(s.ctx, clawbackAccount)
 			},
 			addr,
@@ -145,7 +148,7 @@ func (suite *KeeperTestSuite) TestMsgCreateClawbackVestingAccount() {
 				baseAccount := authtypes.NewBaseAccountWithAddress(addr2)
 				funder := sdk.AccAddress(types.ModuleName)
 				clawbackAccount := types.NewClawbackVestingAccount(baseAccount, funder, balances, vestingStart, lockupPeriods, vestingPeriods)
-				testutil.FundAccount(s.app.BankKeeper, s.ctx, addr2, balances)
+				testutil.FundAccount(s.ctx, s.app.BankKeeper, addr2, balances) //nolint:errcheck
 				s.app.AccountKeeper.SetAccount(s.ctx, clawbackAccount)
 			},
 			addr2,
@@ -163,9 +166,9 @@ func (suite *KeeperTestSuite) TestMsgCreateClawbackVestingAccount() {
 				// Existing clawback account
 				vestingStart := s.ctx.BlockTime()
 				baseAccount := authtypes.NewBaseAccountWithAddress(addr2)
-				funder := sdk.AccAddress(addr)
+				funder := addr
 				clawbackAccount := types.NewClawbackVestingAccount(baseAccount, funder, balances, vestingStart, lockupPeriods, vestingPeriods)
-				testutil.FundAccount(s.app.BankKeeper, s.ctx, addr2, balances)
+				testutil.FundAccount(s.ctx, s.app.BankKeeper, addr2, balances) //nolint:errcheck
 				s.app.AccountKeeper.SetAccount(s.ctx, clawbackAccount)
 			},
 			addr,
@@ -185,7 +188,8 @@ func (suite *KeeperTestSuite) TestMsgCreateClawbackVestingAccount() {
 
 			tc.malleate()
 
-			testutil.FundAccount(s.app.BankKeeper, s.ctx, addr, balances)
+			err := testutil.FundAccount(s.ctx, s.app.BankKeeper, addr, balances)
+			suite.Require().NoError(err)
 
 			msg := types.NewMsgCreateClawbackVestingAccount(
 				tc.from,
@@ -231,7 +235,7 @@ func (suite *KeeperTestSuite) TestMsgClawback() {
 			"no clawback account",
 			func() {},
 			addr,
-			sdk.AccAddress(tests.GenerateAddress().Bytes()),
+			sdk.AccAddress(utiltx.GenerateAddress().Bytes()),
 			addr3,
 			suite.ctx.BlockTime(),
 			false,
@@ -240,7 +244,7 @@ func (suite *KeeperTestSuite) TestMsgClawback() {
 			"wrong account type",
 			func() {
 				baseAccount := authtypes.NewBaseAccountWithAddress(addr4)
-				acc := sdkvesting.NewDelayedVestingAccount(baseAccount, balances, 500000)
+				acc := sdkvesting.NewBaseVestingAccount(baseAccount, balances, 500000)
 				s.app.AccountKeeper.SetAccount(suite.ctx, acc)
 			},
 			addr,
@@ -297,7 +301,8 @@ func (suite *KeeperTestSuite) TestMsgClawback() {
 			// Set funder
 			funder := suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, tc.funder)
 			suite.app.AccountKeeper.SetAccount(suite.ctx, funder)
-			testutil.FundAccount(suite.app.BankKeeper, suite.ctx, addr, balances)
+			err := testutil.FundAccount(suite.ctx, suite.app.BankKeeper, addr, balances)
+			suite.Require().NoError(err)
 
 			// Create Clawback Vesting Account
 			createMsg := types.NewMsgCreateClawbackVestingAccount(addr, addr2, tc.startTime, lockupPeriods, vestingPeriods, false)
@@ -334,13 +339,114 @@ func (suite *KeeperTestSuite) TestMsgClawback() {
 	}
 }
 
+func (suite *KeeperTestSuite) TestMsgUpdateVestingFunder() {
+	testCases := []struct {
+		name         string
+		malleate     func()
+		funder       sdk.AccAddress
+		vestingAcc   sdk.AccAddress
+		newFunder    sdk.AccAddress
+		expectedPass bool
+	}{
+		{
+			"non-existent vesting account",
+			func() {},
+			addr,
+			sdk.AccAddress(utiltx.GenerateAddress().Bytes()),
+			addr3,
+			false,
+		},
+		{
+			"wrong account type",
+			func() {
+				baseAccount := authtypes.NewBaseAccountWithAddress(addr4)
+				acc := sdkvesting.NewBaseVestingAccount(baseAccount, balances, 500000)
+				s.app.AccountKeeper.SetAccount(suite.ctx, acc)
+			},
+			addr,
+			addr4,
+			addr3,
+			false,
+		},
+		{
+			"wrong funder",
+			func() {},
+			addr3,
+			addr2,
+			addr3,
+			false,
+		},
+		{
+			"new funder is blocked",
+			func() {},
+			addr,
+			addr2,
+			authtypes.NewModuleAddress("transfer"),
+			false,
+		},
+		{
+			"update funder successfully",
+			func() {
+			},
+			addr,
+			addr2,
+			addr3,
+			true,
+		},
+	}
+	for _, tc := range testCases {
+		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
+			suite.SetupTest() // reset
+			ctx := sdk.WrapSDKContext(suite.ctx)
+			startTime := suite.ctx.BlockTime()
+
+			// Set funder
+			funder := suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, tc.funder)
+			suite.app.AccountKeeper.SetAccount(suite.ctx, funder)
+			err := testutil.FundAccount(suite.ctx, suite.app.BankKeeper, addr, balances)
+			suite.Require().NoError(err)
+
+			// Create Clawback Vesting Account
+			createMsg := types.NewMsgCreateClawbackVestingAccount(addr, addr2, startTime, lockupPeriods, vestingPeriods, false)
+			createRes, err := suite.app.VestingKeeper.CreateClawbackVestingAccount(ctx, createMsg)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(createRes)
+
+			balanceDest := suite.app.BankKeeper.GetBalance(suite.ctx, addr2, "test")
+			suite.Require().Equal(balanceDest, sdk.NewInt64Coin("test", 1000))
+
+			tc.malleate()
+
+			// Perform Vesting account update
+			msg := types.NewMsgUpdateVestingFunder(tc.funder, tc.newFunder, tc.vestingAcc)
+			res, err := suite.app.VestingKeeper.UpdateVestingFunder(ctx, msg)
+
+			expRes := &types.MsgUpdateVestingFunderResponse{}
+
+			if tc.expectedPass {
+				// get the updated vesting account
+				vestingAcc := suite.app.AccountKeeper.GetAccount(suite.ctx, tc.vestingAcc)
+				va, ok := vestingAcc.(*types.ClawbackVestingAccount)
+				suite.Require().True(ok, "vesting account could not be casted to ClawbackVestingAccount")
+
+				suite.Require().NoError(err)
+				suite.Require().Equal(expRes, res)
+				suite.Require().Equal(va.FunderAddress, tc.newFunder.String())
+			} else {
+				suite.Require().Error(err)
+				suite.Require().Nil(res)
+			}
+		})
+	}
+}
+
 func (suite *KeeperTestSuite) TestClawbackVestingAccountStore() {
 	suite.SetupTest()
 
 	// Create and set clawback vesting account
 	vestingStart := s.ctx.BlockTime()
 	funder := sdk.AccAddress(types.ModuleName)
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	baseAccount := authtypes.NewBaseAccountWithAddress(addr)
 	acc := types.NewClawbackVestingAccount(baseAccount, funder, balances, vestingStart, lockupPeriods, vestingPeriods)
 	suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
@@ -356,7 +462,7 @@ func (suite *KeeperTestSuite) TestClawbackVestingAccountMarshal() {
 	// Create and set clawback vesting account
 	vestingStart := s.ctx.BlockTime()
 	funder := sdk.AccAddress(types.ModuleName)
-	addr := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	addr := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	baseAccount := authtypes.NewBaseAccountWithAddress(addr)
 	acc := types.NewClawbackVestingAccount(baseAccount, funder, balances, vestingStart, lockupPeriods, vestingPeriods)
 
@@ -371,4 +477,113 @@ func (suite *KeeperTestSuite) TestClawbackVestingAccountMarshal() {
 	// error on bad bytes
 	_, err = suite.app.AccountKeeper.UnmarshalAccount(bz[:len(bz)/2])
 	suite.Require().Error(err)
+}
+
+func (suite *KeeperTestSuite) TestConvertVestingAccount() {
+	startTime := s.ctx.BlockTime().Add(-5 * time.Second)
+	testCases := []struct {
+		name     string
+		malleate func() authtypes.AccountI
+		expPass  bool
+	}{
+		{
+			"fail - no account found",
+			func() authtypes.AccountI {
+				from, priv := utiltx.NewAccAddressAndKey()
+				baseAcc := authtypes.NewBaseAccount(from, priv.PubKey(), 1, 5)
+				return baseAcc
+			},
+			false,
+		},
+		{
+			"fail - not a vesting account",
+			func() authtypes.AccountI {
+				from, priv := utiltx.NewAccAddressAndKey()
+				baseAcc := authtypes.NewBaseAccount(from, priv.PubKey(), 1, 5)
+				suite.app.AccountKeeper.SetAccount(suite.ctx, baseAcc)
+				return baseAcc
+			},
+			false,
+		},
+		{
+			"fail - unlocked & unvested",
+			func() authtypes.AccountI {
+				from, priv := utiltx.NewAccAddressAndKey()
+				baseAcc := authtypes.NewBaseAccount(from, priv.PubKey(), 1, 5)
+				lockupPeriods := sdkvesting.Periods{{Length: 0, Amount: balances}}
+				vestingPeriods := sdkvesting.Periods{
+					{Length: 0, Amount: quarter},
+					{Length: 2000, Amount: quarter},
+					{Length: 2000, Amount: quarter},
+					{Length: 2000, Amount: quarter},
+				}
+				vestingAcc := types.NewClawbackVestingAccount(baseAcc, from, balances, startTime, lockupPeriods, vestingPeriods)
+				suite.app.AccountKeeper.SetAccount(suite.ctx, vestingAcc)
+				return vestingAcc
+			},
+			false,
+		},
+		{
+			"fail - locked & vested",
+			func() authtypes.AccountI {
+				from, priv := utiltx.NewAccAddressAndKey()
+				vestingPeriods := sdkvesting.Periods{{Length: 0, Amount: balances}}
+				baseAcc := authtypes.NewBaseAccount(from, priv.PubKey(), 1, 5)
+				vestingAcc := types.NewClawbackVestingAccount(baseAcc, from, balances, startTime, lockupPeriods, vestingPeriods)
+				suite.app.AccountKeeper.SetAccount(suite.ctx, vestingAcc)
+				return vestingAcc
+			},
+			false,
+		},
+		{
+			"fail - locked & unvested",
+			func() authtypes.AccountI {
+				from, priv := utiltx.NewAccAddressAndKey()
+				baseAcc := authtypes.NewBaseAccount(from, priv.PubKey(), 1, 5)
+				vestingAcc := types.NewClawbackVestingAccount(baseAcc, from, balances, suite.ctx.BlockTime(), lockupPeriods, vestingPeriods)
+				suite.app.AccountKeeper.SetAccount(suite.ctx, vestingAcc)
+				return vestingAcc
+			},
+			false,
+		},
+		{
+			"success - unlocked & vested convert to base account",
+			func() authtypes.AccountI {
+				from, priv := utiltx.NewAccAddressAndKey()
+				baseAcc := authtypes.NewBaseAccount(from, priv.PubKey(), 1, 5)
+				vestingPeriods := sdkvesting.Periods{{Length: 0, Amount: balances}}
+				vestingAcc := types.NewClawbackVestingAccount(baseAcc, from, balances, startTime, nil, vestingPeriods)
+				suite.app.AccountKeeper.SetAccount(suite.ctx, vestingAcc)
+				return vestingAcc
+			},
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.SetupTest() // reset
+		ctx := sdk.WrapSDKContext(suite.ctx)
+
+		acc := tc.malleate()
+
+		msg := types.NewMsgConvertVestingAccount(acc.GetAddress())
+		res, err := suite.app.VestingKeeper.ConvertVestingAccount(ctx, msg)
+
+		if tc.expPass {
+			suite.Require().NoError(err)
+			suite.Require().NotNil(res)
+
+			account := suite.app.AccountKeeper.GetAccount(suite.ctx, acc.GetAddress())
+
+			_, ok := account.(vestingexported.VestingAccount)
+			suite.Require().False(ok)
+
+			_, ok = account.(evmostypes.EthAccountI)
+			suite.Require().True(ok)
+
+		} else {
+			suite.Require().Error(err)
+			suite.Require().Nil(res)
+		}
+	}
 }

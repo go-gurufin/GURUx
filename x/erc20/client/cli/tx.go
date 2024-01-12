@@ -1,3 +1,19 @@
+// Copyright 2022 Evmos Foundation
+// This file is part of the Evmos Network packages.
+//
+// Evmos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Evmos packages are distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+
 package cli
 
 import (
@@ -11,16 +27,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
 	"github.com/ethereum/go-ethereum/common"
 
-	ethermint "github.com/tharsis/ethermint/types"
+	evmostypes "github.com/evmos/evmos/v12/types"
 
-	"github.com/tharsis/evmos/v4/x/erc20/types"
+	"github.com/evmos/evmos/v12/x/erc20/types"
 )
 
-// NewTxCmd returns a root CLI command handler for certain modules/erc20 transaction commands.
+// NewTxCmd returns a root CLI command handler for erc20 transaction commands
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -37,11 +53,11 @@ func NewTxCmd() *cobra.Command {
 	return txCmd
 }
 
-// NewConvertCoinCmd returns a CLI command handler for converting cosmos coins
+// NewConvertCoinCmd returns a CLI command handler for converting a Cosmos coin
 func NewConvertCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "convert-coin [coin] [receiver_hex]",
-		Short: "Convert a Cosmos coin to ERC20",
+		Use:   "convert-coin COIN [RECEIVER_HEX]",
+		Short: "Convert a Cosmos coin to ERC20. When the receiver [optional] is omitted, the ERC20 tokens are transferred to the sender.",
 		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
@@ -59,7 +75,7 @@ func NewConvertCoinCmd() *cobra.Command {
 
 			if len(args) == 2 {
 				receiver = args[1]
-				if err := ethermint.ValidateAddress(receiver); err != nil {
+				if err := evmostypes.ValidateAddress(receiver); err != nil {
 					return fmt.Errorf("invalid receiver hex address %w", err)
 				}
 			} else {
@@ -84,11 +100,11 @@ func NewConvertCoinCmd() *cobra.Command {
 	return cmd
 }
 
-// NewConvertERC20Cmd returns a CLI command handler for converting ERC20s
+// NewConvertERC20Cmd returns a CLI command handler for converting an ERC20
 func NewConvertERC20Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "convert-erc20 [contract-address] [amount] [receiver]",
-		Short: "Convert an ERC20 token to Cosmos coin",
+		Use:   "convert-erc20 CONTRACT_ADDRESS AMOUNT [RECEIVER]",
+		Short: "Convert an ERC20 token to Cosmos coin.  When the receiver [optional] is omitted, the Cosmos coins are transferred to the sender.",
 		Args:  cobra.RangeArgs(2, 3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
@@ -97,7 +113,7 @@ func NewConvertERC20Cmd() *cobra.Command {
 			}
 
 			contract := args[0]
-			if err := ethermint.ValidateAddress(contract); err != nil {
+			if err := evmostypes.ValidateAddress(contract); err != nil {
 				return fmt.Errorf("invalid ERC20 contract address %w", err)
 			}
 
@@ -136,35 +152,39 @@ func NewConvertERC20Cmd() *cobra.Command {
 }
 
 // NewRegisterCoinProposalCmd implements the command to submit a community-pool-spend proposal
+//
+//nolint:staticcheck
 func NewRegisterCoinProposalCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "register-coin [metadata]",
+		Use:   "register-coin METADATA_FILE",
 		Args:  cobra.ExactArgs(1),
 		Short: "Submit a register coin proposal",
-		Long: `Submit a proposal to register a Cosmos coin to the erc20 along with an initial deposit.
-Upon passing, the
-The proposal details must be supplied via a JSON file.`,
-		Example: fmt.Sprintf(`$ %s tx gov submit-proposal register-coin <path/to/metadata.json> --from=<key_or_address>
+		Long:  `Submit a proposal to register a Cosmos coin to the erc20 along with an initial deposit. The proposal details must be supplied via a JSON file.`,
+		Example: fmt.Sprintf(`$ %s tx gov submit-legacy-proposal register-coin metadata.json --from=<key_or_address>
 
 Where metadata.json contains (example):
 
 {
-  "description": "staking, gas and governance token of the Evmos testnets"
-  "denom_units": [
-		{
-			"denom": "aevmos",
-			"exponent": 0,
-			"aliases": ["atto evmos"]
-		},
-		{
-			"denom": "evmos",
-			"exponent": 18
+  "metadata": [
+    {
+			"description": "The native staking and governance token of the Osmosis chain",
+			"denom_units": [
+				{
+						"denom": "ibc/<HASH>",
+						"exponent": 0,
+						"aliases": ["ibcuosmo"]
+				},
+				{
+						"denom": "OSMO",
+						"exponent": 6
+				}
+			],
+			"base": "ibc/<HASH>",
+			"display": "OSMO",
+			"name": "Osmo",
+			"symbol": "OSMO"
 		}
-	],
-	"base": "aevmos",
-	"display: "evmos",
-	"name": "Evmos",
-	"symbol": "EVMOS"
+	]
 }`, version.AppName,
 		),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -200,9 +220,9 @@ Where metadata.json contains (example):
 
 			from := clientCtx.GetFromAddress()
 
-			content := types.NewRegisterCoinProposal(title, description, metadata)
+			content := types.NewRegisterCoinProposal(title, description, metadata...)
 
-			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
+			msg, err := govv1beta1.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}
@@ -231,13 +251,15 @@ Where metadata.json contains (example):
 }
 
 // NewRegisterERC20ProposalCmd implements the command to submit a community-pool-spend proposal
+//
+//nolint:staticcheck
 func NewRegisterERC20ProposalCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "register-erc20 [erc20-address]",
-		Args:    cobra.ExactArgs(1),
-		Short:   "Submit a proposal to register an ERC20 token",
-		Long:    "Submit a proposal to register an ERC20 token to the erc20 along with an initial deposit.",
-		Example: fmt.Sprintf("$ %s tx gov submit-proposal register-erc20 <path/to/proposal.json> --from=<key_or_address>", version.AppName),
+		Use:     "register-erc20 ERC20_ADDRESS...",
+		Args:    cobra.MinimumNArgs(1),
+		Short:   "Submit a proposal to register ERC20 token",
+		Long:    "Submit a proposal to register ERC20 tokens along with an initial deposit. To register multiple tokens in one proposal pass them after each other e.g. `register-erc20 <contract-address1> <contract-address2>` ",
+		Example: fmt.Sprintf("$ %s tx gov submit-legacy-proposal register-erc20 <contract-address> --from=<key_or_address>", version.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -264,11 +286,11 @@ func NewRegisterERC20ProposalCmd() *cobra.Command {
 				return err
 			}
 
-			erc20Addr := args[0]
+			erc20Addresses := args
 			from := clientCtx.GetFromAddress()
-			content := types.NewRegisterERC20Proposal(title, description, erc20Addr)
+			content := types.NewRegisterERC20Proposal(title, description, erc20Addresses...)
 
-			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
+			msg, err := govv1beta1.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}
@@ -297,13 +319,15 @@ func NewRegisterERC20ProposalCmd() *cobra.Command {
 }
 
 // NewToggleTokenConversionProposalCmd implements the command to submit a community-pool-spend proposal
+//
+//nolint:staticcheck
 func NewToggleTokenConversionProposalCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "toggle-token-conversion [token]",
+		Use:     "toggle-token-conversion TOKEN",
 		Args:    cobra.ExactArgs(1),
 		Short:   "Submit a toggle token conversion proposal",
 		Long:    "Submit a proposal to toggle the conversion of a token pair along with an initial deposit.",
-		Example: fmt.Sprintf("$ %s tx gov submit-proposal toggle-token-conversion <denom_or_contract> --from=<key_or_address>", version.AppName),
+		Example: fmt.Sprintf("$ %s tx gov submit-legacy-proposal toggle-token-conversion DENOM_OR_CONTRACT --from=<key_or_address>", version.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -334,7 +358,7 @@ func NewToggleTokenConversionProposalCmd() *cobra.Command {
 			token := args[0]
 			content := types.NewToggleTokenConversionProposal(title, description, token)
 
-			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
+			msg, err := govv1beta1.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}

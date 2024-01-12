@@ -1,85 +1,97 @@
-package types
+package types_test
 
 import (
+	"fmt"
 	"testing"
-	time "time"
+	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/evmos/evmos/v12/x/claims/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestParamsValidate(t *testing.T) {
 	testCases := []struct {
 		name     string
-		params   Params
+		params   types.Params
 		expError bool
 	}{
 		{
 			"fail - empty",
-			Params{},
+			types.Params{},
 			true,
 		},
 		{
 			"fail - duration of decay is 0",
-			Params{DurationOfDecay: 0},
+			types.Params{DurationOfDecay: 0},
 			true,
 		},
 		{
 			"fail - duration until decay is 0",
-			Params{
-				DurationOfDecay:    DefaultDurationOfDecay,
+			types.Params{
+				DurationOfDecay:    types.DefaultDurationOfDecay,
 				DurationUntilDecay: 0,
 			},
 			true,
 		},
 		{
 			"fail - invalid claim denom",
-			Params{
-				DurationOfDecay:    DefaultDurationOfDecay,
-				DurationUntilDecay: DefaultDurationUntilDecay,
+			types.Params{
+				DurationOfDecay:    types.DefaultDurationOfDecay,
+				DurationUntilDecay: types.DefaultDurationUntilDecay,
 				ClaimsDenom:        "",
 			},
 			true,
 		},
 		{
 			"fail - invalid authorized channel",
-			Params{
-				DurationOfDecay:    DefaultDurationOfDecay,
-				DurationUntilDecay: DefaultDurationUntilDecay,
-				ClaimsDenom:        DefaultClaimsDenom,
+			types.Params{
+				DurationOfDecay:    types.DefaultDurationOfDecay,
+				DurationUntilDecay: types.DefaultDurationUntilDecay,
+				ClaimsDenom:        types.DefaultClaimsDenom,
 				AuthorizedChannels: []string{""},
 			},
 			true,
 		},
 		{
 			"fail - invalid EVM channel",
-			Params{
-				DurationOfDecay:    DefaultDurationOfDecay,
-				DurationUntilDecay: DefaultDurationUntilDecay,
-				ClaimsDenom:        DefaultClaimsDenom,
-				AuthorizedChannels: DefaultAuthorizedChannels,
+			types.Params{
+				DurationOfDecay:    types.DefaultDurationOfDecay,
+				DurationUntilDecay: types.DefaultDurationUntilDecay,
+				ClaimsDenom:        types.DefaultClaimsDenom,
+				AuthorizedChannels: types.DefaultAuthorizedChannels,
 				EVMChannels:        []string{""},
 			},
 			true,
 		},
 		{
 			"success - default params",
-			DefaultParams(),
+			types.DefaultParams(),
 			false,
 		},
 		{
 			"success - valid params",
-			Params{
-				DurationOfDecay:    DefaultDurationOfDecay,
-				DurationUntilDecay: DefaultDurationUntilDecay,
+			types.Params{
+				DurationOfDecay:    types.DefaultDurationOfDecay,
+				DurationUntilDecay: types.DefaultDurationUntilDecay,
 				ClaimsDenom:        "tevmos",
-				AuthorizedChannels: DefaultAuthorizedChannels,
-				EVMChannels:        DefaultEVMChannels,
+				AuthorizedChannels: types.DefaultAuthorizedChannels,
+				EVMChannels:        types.DefaultEVMChannels,
 			},
 			false,
 		},
 		{
 			"success - constructor",
-			NewParams(true, "tevmos", time.Unix(0, 0), DefaultDurationOfDecay, DefaultDurationUntilDecay, DefaultAuthorizedChannels, DefaultEVMChannels),
+			types.NewParams(
+				true,
+				"tevmos",
+				time.Unix(0, 0),
+				types.DefaultDurationOfDecay,
+				types.DefaultDurationUntilDecay,
+				types.DefaultAuthorizedChannels,
+				types.DefaultEVMChannels,
+			),
 			false,
 		},
 	}
@@ -139,19 +151,19 @@ func TestParamsValidateDenom(t *testing.T) {
 }
 
 func TestParamsValidateChannels(t *testing.T) {
-	err := ValidateChannels([]string{"channel-0"})
+	err := types.ValidateChannels([]string{"channel-0"})
 	require.NoError(t, err)
-	err = ValidateChannels(false)
+	err = types.ValidateChannels(false)
 	require.Error(t, err)
-	err = ValidateChannels(int64(123))
+	err = types.ValidateChannels(int64(123))
 	require.Error(t, err)
-	err = ValidateChannels("")
+	err = types.ValidateChannels("")
 	require.Error(t, err)
 }
 
 func TestParamsDecayStartTime(t *testing.T) {
 	startTime := time.Now().UTC()
-	params := Params{
+	params := types.Params{
 		AirdropStartTime:   startTime,
 		DurationOfDecay:    time.Hour,
 		DurationUntilDecay: time.Hour,
@@ -163,7 +175,7 @@ func TestParamsDecayStartTime(t *testing.T) {
 
 func TestIsClaimsActive(t *testing.T) {
 	startTime := time.Now().UTC()
-	params := Params{
+	params := types.Params{
 		EnableClaims:       false,
 		AirdropStartTime:   startTime,
 		DurationOfDecay:    time.Hour,
@@ -185,7 +197,7 @@ func TestIsClaimsActive(t *testing.T) {
 
 func TestParamsAirdropEndTime(t *testing.T) {
 	startTime := time.Now().UTC()
-	params := Params{
+	params := types.Params{
 		AirdropStartTime:   startTime,
 		DurationOfDecay:    time.Hour,
 		DurationUntilDecay: time.Hour,
@@ -196,17 +208,56 @@ func TestParamsAirdropEndTime(t *testing.T) {
 }
 
 func TestIsAuthorizedChannel(t *testing.T) {
-	params := DefaultParams()
+	params := types.DefaultParams()
 	res := params.IsAuthorizedChannel("")
 	require.False(t, res)
-	res = params.IsAuthorizedChannel(DefaultAuthorizedChannels[0])
+	res = params.IsAuthorizedChannel(types.DefaultAuthorizedChannels[0])
 	require.True(t, res)
 }
 
 func TestIsEVMChannel(t *testing.T) {
-	params := DefaultParams()
+	params := types.DefaultParams()
 	res := params.IsEVMChannel("")
 	require.False(t, res)
-	res = params.IsEVMChannel(DefaultEVMChannels[0])
+	res = params.IsEVMChannel(types.DefaultEVMChannels[0])
 	require.True(t, res)
+}
+
+func validateBool(i interface{}) error {
+	_, ok := i.(bool)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	return nil
+}
+
+func validateStartDate(i interface{}) error {
+	_, ok := i.(time.Time)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateDuration(i interface{}) error {
+	v, ok := i.(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v <= 0 {
+		return fmt.Errorf("duration must be positive: %s", v)
+	}
+
+	return nil
+}
+
+func validateDenom(i interface{}) error {
+	denom, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	return sdk.ValidateDenom(denom)
 }

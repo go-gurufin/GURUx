@@ -13,12 +13,13 @@ import (
 	tmversion "github.com/tendermint/tendermint/proto/tendermint/version"
 	"github.com/tendermint/tendermint/version"
 
-	"github.com/tharsis/ethermint/tests"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
+	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	"github.com/evmos/evmos/v12/utils"
+	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
 
-	"github.com/tharsis/evmos/v4/app"
-	"github.com/tharsis/evmos/v4/x/erc20"
-	"github.com/tharsis/evmos/v4/x/erc20/types"
+	"github.com/evmos/evmos/v12/app"
+	"github.com/evmos/evmos/v12/x/erc20"
+	"github.com/evmos/evmos/v12/x/erc20/types"
 )
 
 type GenesisTestSuite struct {
@@ -34,12 +35,12 @@ func TestGenesisTestSuite(t *testing.T) {
 
 func (suite *GenesisTestSuite) SetupTest() {
 	// consensus key
-	consAddress := sdk.ConsAddress(tests.GenerateAddress().Bytes())
+	consAddress := sdk.ConsAddress(utiltx.GenerateAddress().Bytes())
 
 	suite.app = app.Setup(false, feemarkettypes.DefaultGenesisState())
 	suite.ctx = suite.app.BaseApp.NewContext(false, tmproto.Header{
 		Height:          1,
-		ChainID:         "evmos_9000-1",
+		ChainID:         utils.TestnetChainID + "-1",
 		Time:            time.Now().UTC(),
 		ProposerAddress: consAddress.Bytes(),
 
@@ -100,7 +101,7 @@ func (suite *GenesisTestSuite) TestERC20InitGenesis() {
 		})
 		params := suite.app.Erc20Keeper.GetParams(suite.ctx)
 
-		tokenPairs := suite.app.Erc20Keeper.GetAllTokenPairs(suite.ctx)
+		tokenPairs := suite.app.Erc20Keeper.GetTokenPairs(suite.ctx)
 		suite.Require().Equal(tc.genesisState.Params, params)
 		if len(tokenPairs) > 0 {
 			suite.Require().Equal(tc.genesisState.TokenPairs, tokenPairs)
@@ -145,7 +146,7 @@ func (suite *GenesisTestSuite) TestErc20ExportGenesis() {
 			params := suite.app.Erc20Keeper.GetParams(suite.ctx)
 			suite.Require().Equal(genesisExported.Params, params)
 
-			tokenPairs := suite.app.Erc20Keeper.GetAllTokenPairs(suite.ctx)
+			tokenPairs := suite.app.Erc20Keeper.GetTokenPairs(suite.ctx)
 			if len(tokenPairs) > 0 {
 				suite.Require().Equal(genesisExported.TokenPairs, tokenPairs)
 			} else {

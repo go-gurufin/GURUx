@@ -1,9 +1,9 @@
 #!/bin/bash
 
-KEY="mykey"
+KEY="dev0"
 CHAINID="evmos_9000-1"
 MONIKER="mymoniker"
-DATA_DIR=$(mktemp -d -t evmos-datadir.XXXXX)
+DATA_DIR="/home"
 
 echo "create and add new keys"
 ./evmosd keys add $KEY --home $DATA_DIR --no-backup --chain-id $CHAINID --algo "eth_secp256k1" --keyring-backend test
@@ -23,7 +23,7 @@ echo "prepare genesis: Run validate-genesis to ensure everything worked and that
 echo "starting evmos node $i in background ..."
 ./evmosd start --pruning=nothing --rpc.unsafe \
 --keyring-backend test --home $DATA_DIR \
->$DATA_DIR/node.log 2>&1 & disown
+>$DATA_DIR/node.log 2>&1 & disown 
 
 echo "started evmos node"
 tail -f /dev/null
