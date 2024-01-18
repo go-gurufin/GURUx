@@ -1,4 +1,4 @@
-# Compliance Chain(GURUx)
+# Compliance Chain(MU)
 ## 1. Definition
 The Compliance Chain functions as a semi-private chain whereby GURUFIN operates the Compliance and Sentry Nodes while the operation and delegation of Watcher Nodes are open to external entities. By employing the Tendermint BFT and Proof-of-Compliance (PoC) consensus algorithms, the network achieves streamlined transaction processing with remarkably low gas fees.
 
@@ -6,7 +6,7 @@ Upon receiving a transaction request, Compliance Nodes assume the responsibility
 
 Furthermore, the Compliance Chain provides a conducive environment for decentralized applications (dApps) and smart contracts by integrating the Ethereum Virtual Machine (EVM). This integration allows for seamless deployment and execution of smart contracts written in Turingcomplete programming languages, facilitating effortless migration to the Compliance Chain without requiring code modifications.
 
-One notable feature of the Compliance Chain is the issuance of the GURUx native fiat-backed stable token, which maintains a 1 GURUx : 1 USD peg and undergoes real-time auditing. The GURUx token serves as a utility token, bridging the gap between traditional finance and the broader GURUFIN Ecosystem. It provides investors with a stable store of value and enables users to mitigate risks associated with cryptocurrency volatility. In addition to the GURUx token, the Compliance Chain also supports the issuance of ERC-20 and ERC-721 tokens.
+One notable feature of the Compliance Chain is the issuance of the MU native fiat-backed stable token, which maintains a 1 MU : 1 USD peg and undergoes real-time auditing. The MU token serves as a utility token, bridging the gap between traditional finance and the broader GURUFIN Ecosystem. It provides investors with a stable store of value and enables users to mitigate risks associated with cryptocurrency volatility. In addition to the MU token, the Compliance Chain also supports the issuance of ERC-20 and ERC-721 tokens.
 <p align="center"><img src="https://doc.gurufin.io/assets/03_Compliance_Chain_Network_Configuration.png" width="500px"></p>
 
 ## 2. Node Types
@@ -21,11 +21,11 @@ The Watcher Node is located on an external network and performs the role of supe
 
 ## 3. Technical Specifications
 - Consensus Algorithms: Tendermint BFT, PoC(Proof-of-Compliance)
-- Native Stable Token: GURUx
+- Native Stable Token: MU
 - Block Generation: 1-3 Seconds Setting
 - Gas Limit: ∞
 - TPS: 10,000+
-- Min. Gas Fee: 0.000032 GURUx
+- Min. Gas Fee: 0.000032 MU
 - Max. Planned Node Operations: Compliance(5) / Sentry(3+) / Watcher(∞)
 - Memory Pool Size: 10,000 Transactions
 - Max. Transaction Size: 3 GB
@@ -46,8 +46,8 @@ The Watcher Node is located on an external network and performs the role of supe
 ## 5. Installation
 For prerequisites and detailed build instructions please read the Installation instructions. Once the dependencies are installed, run:
 
-**Note**: Requires [Go 1.20.1+](https://golang.org/dl/)
+**Note**: Requires [Go 1.17.5+](https://golang.org/dl/)
 
 ```bash
-make build
+make install
 ```
