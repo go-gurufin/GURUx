@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package main
 
 import (
@@ -51,24 +35,24 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	evmosclient "github.com/evmos/evmos/v12/client"
-	"github.com/evmos/evmos/v12/client/debug"
-	"github.com/evmos/evmos/v12/encoding"
-	"github.com/evmos/evmos/v12/ethereum/eip712"
-	evmosserver "github.com/evmos/evmos/v12/server"
-	servercfg "github.com/evmos/evmos/v12/server/config"
-	srvflags "github.com/evmos/evmos/v12/server/flags"
+	guruclient "github.com/gurufin2021/GURUx/client"
+	"github.com/gurufin2021/GURUx/client/debug"
+	"github.com/gurufin2021/GURUx/encoding"
+	"github.com/gurufin2021/GURUx/ethereum/eip712"
+	guruserver "github.com/gurufin2021/GURUx/server"
+	servercfg "github.com/gurufin2021/GURUx/server/config"
+	srvflags "github.com/gurufin2021/GURUx/server/flags"
 
-	"github.com/evmos/evmos/v12/app"
-	cmdcfg "github.com/evmos/evmos/v12/cmd/config"
-	evmoskr "github.com/evmos/evmos/v12/crypto/keyring"
+	"github.com/gurufin2021/GURUx/app"
+	cmdcfg "github.com/gurufin2021/GURUx/cmd/config"
+	gurukr "github.com/gurufin2021/GURUx/crypto/keyring"
 )
 
 const (
-	EnvPrefix = "EVMOS"
+	EnvPrefix = "GURUX"
 )
 
-// NewRootCmd creates a new root command for evmosd. It is called once in the
+// NewRootCmd creates a new root command for guruxd. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
@@ -81,7 +65,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
 		WithHomeDir(app.DefaultNodeHome).
-		WithKeyringOptions(evmoskr.Option()).
+		WithKeyringOptions(gurukr.Option()).
 		WithViper(EnvPrefix).
 		WithLedgerHasProtobuf(true)
 
@@ -89,7 +73,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   app.Name,
-		Short: "Evmos Daemon",
+		Short: "Gurux Daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -122,7 +106,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	a := appCreator{encodingConfig}
 	rootCmd.AddCommand(
-		evmosclient.ValidateChainID(
+		guruclient.ValidateChainID(
 			InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
@@ -137,9 +121,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		pruning.PruningCmd(a.newApp),
 	)
 
-	evmosserver.AddCommands(
+	guruserver.AddCommands(
 		rootCmd,
-		evmosserver.NewDefaultStartOptions(a.newApp, app.DefaultNodeHome),
+		guruserver.NewDefaultStartOptions(a.newApp, app.DefaultNodeHome),
 		a.appExport,
 		addModuleInitFlags,
 	)
@@ -149,7 +133,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		rpc.StatusCommand(),
 		queryCommand(),
 		txCommand(),
-		evmosclient.KeyCommands(app.DefaultNodeHome),
+		guruclient.KeyCommands(app.DefaultNodeHome),
 	)
 	rootCmd, err := srvflags.AddTxFlags(rootCmd)
 	if err != nil {
@@ -272,7 +256,7 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent)),
 	)
 
-	evmosApp := app.NewEvmos(
+	guruxApp := app.NewGurux(
 		logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(sdkserver.FlagInvCheckPeriod)),
@@ -291,7 +275,7 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		baseapp.SetIAVLDisableFastNode(cast.ToBool(appOpts.Get(sdkserver.FlagDisableIAVLFastNode))),
 	)
 
-	return evmosApp
+	return guruxApp
 }
 
 // appExport creates a new simapp (optionally at a given height)
@@ -300,23 +284,23 @@ func (a appCreator) appExport(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
 ) (servertypes.ExportedApp, error) {
-	var evmosApp *app.Evmos
+	var guruxApp *app.Gurux
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
 	if height != -1 {
-		evmosApp = app.NewEvmos(logger, db, traceStore, false, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
+		guruxApp = app.NewGurux(logger, db, traceStore, false, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 
-		if err := evmosApp.LoadHeight(height); err != nil {
+		if err := guruxApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		evmosApp = app.NewEvmos(logger, db, traceStore, true, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
+		guruxApp = app.NewGurux(logger, db, traceStore, true, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 	}
 
-	return evmosApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return guruxApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
 }
 
 // initTendermintConfig helps to override default Tendermint Config values.

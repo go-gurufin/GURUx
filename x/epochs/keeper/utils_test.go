@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/testutil"
-	"github.com/evmos/evmos/v12/x/epochs/types"
-	evm "github.com/evmos/evmos/v12/x/evm/types"
+	"github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/testutil"
+	"github.com/gurufin2021/GURUx/x/epochs/types"
+	evm "github.com/gurufin2021/GURUx/x/evm/types"
 )
 
 // Test helpers
@@ -19,7 +19,7 @@ func (suite *KeeperTestSuite) DoSetupTest() {
 
 	// setup context
 	header := testutil.NewHeader(
-		1, time.Now().UTC(), "evmos_9001-1", suite.consAddress, nil, nil,
+		1, time.Now().UTC(), "gurux_9001-1", suite.consAddress, nil, nil,
 	)
 	suite.ctx = suite.app.BaseApp.NewContext(checkTx, header)
 

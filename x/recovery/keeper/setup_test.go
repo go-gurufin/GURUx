@@ -9,19 +9,19 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	ibctesting "github.com/evmos/evmos/v12/ibc/testing"
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/utils"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
+	ibctesting "github.com/gurufin2021/GURUx/ibc/testing"
+	"github.com/gurufin2021/GURUx/testutil"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/utils"
+	feemarkettypes "github.com/gurufin2021/GURUx/x/feemarket/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibcgotesting "github.com/cosmos/ibc-go/v6/testing"
 
-	"github.com/evmos/evmos/v12/app"
-	claimstypes "github.com/evmos/evmos/v12/x/claims/types"
-	"github.com/evmos/evmos/v12/x/recovery/types"
+	"github.com/gurufin2021/GURUx/app"
+	claimstypes "github.com/gurufin2021/GURUx/x/claims/types"
+	"github.com/gurufin2021/GURUx/x/recovery/types"
 )
 
 var (
@@ -35,7 +35,7 @@ type KeeperTestSuite struct {
 
 	ctx sdk.Context
 
-	app         *app.Evmos
+	app         *app.Gurux
 	queryClient types.QueryClient
 }
 
@@ -45,7 +45,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 	suite.app = app.Setup(false, feemarkettypes.DefaultGenesisState())
 	header := testutil.NewHeader(
-		1, time.Now().UTC(), "evmos_9001-1", consAddress, nil, nil,
+		1, time.Now().UTC(), "gurux_9001-1", consAddress, nil, nil,
 	)
 	suite.ctx = suite.app.BaseApp.NewContext(false, header)
 
@@ -72,12 +72,12 @@ type IBCTestingSuite struct {
 	coordinator *ibcgotesting.Coordinator
 
 	// testing chains used for convenience and readability
-	EvmosChain      *ibcgotesting.TestChain
+	GuruxChain      *ibcgotesting.TestChain
 	IBCOsmosisChain *ibcgotesting.TestChain
 	IBCCosmosChain  *ibcgotesting.TestChain
 
-	pathOsmosisEvmos  *ibctesting.Path
-	pathCosmosEvmos   *ibctesting.Path
+	pathOsmosisGurux  *ibctesting.Path
+	pathCosmosGurux   *ibctesting.Path
 	pathOsmosisCosmos *ibctesting.Path
 }
 

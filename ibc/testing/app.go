@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package ibctesting
 
 import (
@@ -35,12 +19,12 @@ import (
 
 	ibcgotesting "github.com/cosmos/ibc-go/v6/testing"
 
-	evmosapp "github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
+	guruapp "github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/types"
+	"github.com/gurufin2021/GURUx/utils"
 )
 
-var DefaultTestingAppInit func() (ibcgotesting.TestingApp, map[string]json.RawMessage) = evmosapp.SetupTestingApp
+var DefaultTestingAppInit func() (ibcgotesting.TestingApp, map[string]json.RawMessage) = guruapp.SetupTestingApp
 
 // SetupWithGenesisValSet initializes a new SimApp with a validator set and genesis accounts
 // that also act as delegators. For simplicity, each validator is bonded with a delegation
@@ -81,7 +65,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 
 	// set validators and delegations
 	stakingParams := stakingtypes.DefaultParams()
-	// set bond demon to be aevmos
+	// set bond demon to be agurux
 	stakingParams.BondDenom = utils.BaseDenom
 	stakingGenesis := stakingtypes.NewGenesisState(stakingParams, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(stakingGenesis)
@@ -110,7 +94,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 		abci.RequestInitChain{
 			ChainId:         chainID,
 			Validators:      []abci.ValidatorUpdate{},
-			ConsensusParams: evmosapp.DefaultConsensusParams,
+			ConsensusParams: guruapp.DefaultConsensusParams,
 			AppStateBytes:   stateBytes,
 		},
 	)

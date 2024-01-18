@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package upgrade
 
 import (
@@ -64,14 +48,14 @@ func (m *Manager) CreateSubmitProposalExec(targetVersion, chainID string, upgrad
 		proposalType = "submit-proposal"
 	}
 	cmd := []string{
-		"evmosd",
+		"guruxd",
 		"tx",
 		"gov",
 		proposalType,
 		"software-upgrade",
 		targetVersion,
 		"--title=\"TEST\"",
-		"--deposit=10000000aevmos",
+		"--deposit=10000000agurux",
 		"--description=\"Test upgrade proposal\"",
 		fmt.Sprintf("--upgrade-height=%d", upgradeHeight),
 		upgradeInfo,
@@ -91,19 +75,19 @@ func (m *Manager) CreateSubmitProposalExec(targetVersion, chainID string, upgrad
 // CreateDepositProposalExec creates a gov tx to deposit for the proposal with the given id
 func (m *Manager) CreateDepositProposalExec(chainID string, id int) (string, error) {
 	cmd := []string{
-		"evmosd",
+		"guruxd",
 		"tx",
 		"gov",
 		"deposit",
 		fmt.Sprint(id),
-		"10000000aevmos",
+		"10000000agurux",
 		"--from=mykey",
 		fmt.Sprintf("--chain-id=%s", chainID),
 		"-b=block",
 		"--yes",
 		"--keyring-backend=test",
 		"--log_format=json",
-		"--fees=500aevmos",
+		"--fees=500agurux",
 		"--gas=500000",
 	}
 
@@ -113,7 +97,7 @@ func (m *Manager) CreateDepositProposalExec(chainID string, id int) (string, err
 // CreateVoteProposalExec creates gov tx to vote 'yes' on the proposal with the given id
 func (m *Manager) CreateVoteProposalExec(chainID string, id int, flags ...string) (string, error) {
 	cmd := []string{
-		"evmosd",
+		"guruxd",
 		"tx",
 		"gov",
 		"vote",

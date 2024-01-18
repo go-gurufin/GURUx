@@ -3,14 +3,14 @@ package keeper_test
 import (
 	"time"
 
-	"github.com/evmos/evmos/v12/x/inflation/types"
+	"github.com/gurufin2021/GURUx/x/inflation/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	epochstypes "github.com/evmos/evmos/v12/x/epochs/types"
-	incentivestypes "github.com/evmos/evmos/v12/x/incentives/types"
+	epochstypes "github.com/gurufin2021/GURUx/x/epochs/types"
+	incentivestypes "github.com/gurufin2021/GURUx/x/incentives/types"
 )
 
 var (

@@ -12,10 +12,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/evmos/evmos/v12/x/erc20/keeper"
-	"github.com/evmos/evmos/v12/x/erc20/types"
-	"github.com/evmos/evmos/v12/x/evm/statedb"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	"github.com/gurufin2021/GURUx/x/erc20/keeper"
+	"github.com/gurufin2021/GURUx/x/erc20/types"
+	"github.com/gurufin2021/GURUx/x/evm/statedb"
+	evmtypes "github.com/gurufin2021/GURUx/x/evm/types"
 )
 
 func (suite *KeeperTestSuite) TestConvertCoinNativeCoin() {

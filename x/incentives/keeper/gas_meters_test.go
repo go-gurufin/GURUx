@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
 
-	"github.com/evmos/evmos/v12/x/incentives/types"
+	"github.com/gurufin2021/GURUx/x/incentives/types"
 )
 
 func (suite *KeeperTestSuite) TestGetIncentivesGasMeters() {

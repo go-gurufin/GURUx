@@ -17,18 +17,18 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/contracts"
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v12/encoding"
-	"github.com/evmos/evmos/v12/server/config"
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	evmostypes "github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
-	epochstypes "github.com/evmos/evmos/v12/x/epochs/types"
-	evm "github.com/evmos/evmos/v12/x/evm/types"
-	"github.com/evmos/evmos/v12/x/incentives/types"
+	"github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/contracts"
+	"github.com/gurufin2021/GURUx/crypto/ethsecp256k1"
+	"github.com/gurufin2021/GURUx/encoding"
+	"github.com/gurufin2021/GURUx/server/config"
+	"github.com/gurufin2021/GURUx/testutil"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	gurutypes "github.com/gurufin2021/GURUx/types"
+	"github.com/gurufin2021/GURUx/utils"
+	epochstypes "github.com/gurufin2021/GURUx/x/epochs/types"
+	evm "github.com/gurufin2021/GURUx/x/evm/types"
+	"github.com/gurufin2021/GURUx/x/incentives/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -79,7 +79,7 @@ func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 
 	// Set Context
 	header := testutil.NewHeader(
-		1, time.Now().UTC(), "evmos_9001-1", suite.consAddress, nil, nil,
+		1, time.Now().UTC(), "gurux_9001-1", suite.consAddress, nil, nil,
 	)
 	suite.ctx = suite.app.BaseApp.NewContext(checkTx, header)
 
@@ -103,7 +103,7 @@ func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 		suite.app.EpochsKeeper.SetEpochInfo(suite.ctx, epoch)
 	}
 
-	acc := &evmostypes.EthAccount{
+	acc := &gurutypes.EthAccount{
 		BaseAccount: authtypes.NewBaseAccount(sdk.AccAddress(suite.address.Bytes()), nil, 0, 0),
 		CodeHash:    common.BytesToHash(crypto.Keccak256(nil)).String(),
 	}

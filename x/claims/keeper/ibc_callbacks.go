@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package keeper
 
 import (
@@ -24,8 +8,8 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
-	"github.com/evmos/evmos/v12/ibc"
-	"github.com/evmos/evmos/v12/x/claims/types"
+	"github.com/gurufin2021/GURUx/ibc"
+	"github.com/gurufin2021/GURUx/x/claims/types"
 )
 
 // OnAcknowledgementPacket performs an IBC send callback. Once a user submits an
@@ -100,7 +84,7 @@ func (k Keeper) OnRecvPacket(
 	}
 
 	// Get bech32 address from the counterparty and change the bech32 human
-	// readable prefix (HRP) of the sender to `evmos1`
+	// readable prefix (HRP) of the sender to `gurux1`
 	sender, recipient, senderBech32, recipientBech32, err := ibc.GetTransferSenderRecipient(packet)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
@@ -130,7 +114,7 @@ func (k Keeper) OnRecvPacket(
 	// If the packet is sent from a non-EVM chain, the sender address is not an
 	// ethereum key (i.e. `ethsecp256k1`). Thus, if `sameAddress` is true, the
 	// recipient address must be a non-ethereum key as well, which is not
-	// supported on Evmos. To prevent funds getting stuck, return an error, unless
+	// supported on Gurux. To prevent funds getting stuck, return an error, unless
 	// the destination channel from a connection to a chain is EVM-compatible or
 	// supports ethereum keys (eg: Cronos, Injective).
 	if sameAddress && !fromEVMChain {

@@ -5,16 +5,16 @@ import (
 	"time"
 
 	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
-	evmostypes "github.com/evmos/evmos/v12/types"
+	gurutypes "github.com/gurufin2021/GURUx/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	sdkvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/x/vesting/types"
+	"github.com/gurufin2021/GURUx/testutil"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/x/vesting/types"
 )
 
 var (
@@ -578,7 +578,7 @@ func (suite *KeeperTestSuite) TestConvertVestingAccount() {
 			_, ok := account.(vestingexported.VestingAccount)
 			suite.Require().False(ok)
 
-			_, ok = account.(evmostypes.EthAccountI)
+			_, ok = account.(gurutypes.EthAccountI)
 			suite.Require().True(ok)
 
 		} else {

@@ -12,10 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	cryptocodec "github.com/evmos/evmos/v12/crypto/codec"
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	encodingcodec "github.com/evmos/evmos/v12/encoding/codec"
-	"github.com/evmos/evmos/v12/types"
+	cryptocodec "github.com/gurufin2021/GURUx/crypto/codec"
+	"github.com/gurufin2021/GURUx/crypto/ethsecp256k1"
+	encodingcodec "github.com/gurufin2021/GURUx/encoding/codec"
+	"github.com/gurufin2021/GURUx/types"
 )
 
 func init() {

@@ -5,14 +5,14 @@ TMVERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::'
 
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
-EVMOS_BINARY = evmosd
-EVMOS_DIR = evmos
+GURUX_BINARY = guruxd
+GURUX_DIR = gurux
 # BUILDDIR ?= $(CURDIR)/build
 BUILDDIR ?= ./build
-HTTPS_GIT := https://github.com/evmos/evmos.git
+HTTPS_GIT := https://github.com/gurufin2021/GURUx
 DOCKER := $(shell which docker)
 NAMESPACE := tharsishq
-PROJECT := evmos
+PROJECT := gurux
 DOCKER_IMAGE := $(NAMESPACE)/$(PROJECT)
 # DOCKER_TAG := $(COMMIT_HASH)
 DOCKER_TAG := uptest
@@ -133,7 +133,7 @@ build-reproducible: go.sum
 	$(DOCKER) rm latest-build || true
 	$(DOCKER) run --volume=$(CURDIR):/sources:ro \
         --env TARGET_PLATFORMS='linux/amd64' \
-        --env APP=evmosd \
+        --env APP=guruxd \
         --env VERSION=$(VERSION) \
         --env COMMIT=$(COMMIT) \
         --env CGO_ENABLED=1 \
@@ -148,12 +148,12 @@ build-docker:
 	$(DOCKER) tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
 	# docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:${COMMIT_HASH}
 	# update old container
-	$(DOCKER) rm evmos || true
+	$(DOCKER) rm gurux || true
 	# create a new container from the latest image
-	$(DOCKER) create --name evmos -t -i ${DOCKER_IMAGE}:latest evmos
+	$(DOCKER) create --name gurux -t -i ${DOCKER_IMAGE}:latest gurux
 	# move the binaries to the ./build directory
 	mkdir -p ./build/
-	$(DOCKER) cp evmos:/usr/bin/evmosd ./build/
+	$(DOCKER) cp gurux:/usr/bin/guruxd ./build/
 
 push-docker: build-docker
 	$(DOCKER) push ${DOCKER_IMAGE}:${DOCKER_TAG}
@@ -279,7 +279,7 @@ update-swagger-docs: statik
 .PHONY: update-swagger-docs
 
 godocs:
-	@echo "--> Wait a few seconds and visit http://localhost:6060/pkg/github.com/evmos/evmos"
+	@echo "--> Wait a few seconds and visit http://localhost:6060/pkg/github.com/gurux/gurux"
 	godoc -http=:6060
 
 ###############################################################################
@@ -313,7 +313,7 @@ test-e2e:
 		make build-docker; \
 	fi
 	@mkdir -p ./build
-	@rm -rf build/.evmosd
+	@rm -rf build/.guruxd
 	@INITIAL_VERSION=$(INITIAL_VERSION) TARGET_VERSION=$(TARGET_VERSION) \
 	E2E_SKIP_CLEANUP=$(E2E_SKIP_CLEANUP) MOUNT_PATH=$(MOUNT_PATH) CHAIN_ID=$(CHAIN_ID) \
 	go test -v ./tests/e2e -run ^TestIntegrationTestSuite$
@@ -489,7 +489,7 @@ localnet-build:
 
 # Start a 4-node testnet locally
 localnet-start: localnet-stop localnet-build
-	@if ! [ -f build/node0/$(EVMOS_BINARY)/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/evmos:Z evmos/node "./evmosd testnet init-files --v 4 -o /evmos --keyring-backend=test --starting-ip-address 192.167.10.2"; fi
+	@if ! [ -f build/node0/$(GURUX_BINARY)/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/gurux:Z gurux/node "./guruxd testnet init-files --v 4 -o /gurux --keyring-backend=test --starting-ip-address 192.167.10.2"; fi
 	docker-compose up -d
 
 # Stop testnet
@@ -505,15 +505,15 @@ localnet-clean:
 localnet-unsafe-reset:
 	docker-compose down
 ifeq ($(OS),Windows_NT)
-	@docker run --rm -v $(CURDIR)\build\node0\evmosd:/evmos\Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
-	@docker run --rm -v $(CURDIR)\build\node1\evmosd:/evmos\Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
-	@docker run --rm -v $(CURDIR)\build\node2\evmosd:/evmos\Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
-	@docker run --rm -v $(CURDIR)\build\node3\evmosd:/evmos\Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
+	@docker run --rm -v $(CURDIR)\build\node0\guruxd:/gurux\Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
+	@docker run --rm -v $(CURDIR)\build\node1\guruxd:/gurux\Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
+	@docker run --rm -v $(CURDIR)\build\node2\guruxd:/gurux\Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
+	@docker run --rm -v $(CURDIR)\build\node3\guruxd:/gurux\Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
 else
-	@docker run --rm -v $(CURDIR)/build/node0/evmosd:/evmos:Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
-	@docker run --rm -v $(CURDIR)/build/node1/evmosd:/evmos:Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
-	@docker run --rm -v $(CURDIR)/build/node2/evmosd:/evmos:Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
-	@docker run --rm -v $(CURDIR)/build/node3/evmosd:/evmos:Z evmos/node "./evmosd tendermint unsafe-reset-all --home=/evmos"
+	@docker run --rm -v $(CURDIR)/build/node0/guruxd:/gurux:Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
+	@docker run --rm -v $(CURDIR)/build/node1/guruxd:/gurux:Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
+	@docker run --rm -v $(CURDIR)/build/node2/guruxd:/gurux:Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
+	@docker run --rm -v $(CURDIR)/build/node3/guruxd:/gurux:Z gurux/node "./guruxd tendermint unsafe-reset-all --home=/gurux"
 endif
 
 # Clean testnet
@@ -526,7 +526,7 @@ localnet-show-logstream:
 ###                                Releasing                                ###
 ###############################################################################
 
-PACKAGE_NAME:=github.com/evmos/evmos
+PACKAGE_NAME:=github.com/gurux/gurux
 GOLANG_CROSS_VERSION  = v1.20
 GOPATH ?= '$(HOME)/go'
 release-dry-run:

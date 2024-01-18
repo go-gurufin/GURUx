@@ -19,25 +19,25 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/app/ante"
-	evmante "github.com/evmos/evmos/v12/app/ante/evm"
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v12/encoding"
-	"github.com/evmos/evmos/v12/ethereum/eip712"
-	"github.com/evmos/evmos/v12/testutil"
-	"github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
-	"github.com/evmos/evmos/v12/x/evm/statedb"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
+	"github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/app/ante"
+	evmante "github.com/gurufin2021/GURUx/app/ante/evm"
+	"github.com/gurufin2021/GURUx/crypto/ethsecp256k1"
+	"github.com/gurufin2021/GURUx/encoding"
+	"github.com/gurufin2021/GURUx/ethereum/eip712"
+	"github.com/gurufin2021/GURUx/testutil"
+	"github.com/gurufin2021/GURUx/types"
+	"github.com/gurufin2021/GURUx/utils"
+	"github.com/gurufin2021/GURUx/x/evm/statedb"
+	evmtypes "github.com/gurufin2021/GURUx/x/evm/types"
+	feemarkettypes "github.com/gurufin2021/GURUx/x/feemarket/types"
 )
 
 type AnteTestSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
-	app             *app.Evmos
+	app             *app.Gurux
 	clientCtx       client.Context
 	anteHandler     sdk.AnteHandler
 	ethSigner       ethtypes.Signer
@@ -61,7 +61,7 @@ func (suite *AnteTestSuite) SetupTest() {
 	suite.Require().NoError(err)
 	suite.priv = priv
 
-	suite.app = app.EthSetup(checkTx, func(app *app.Evmos, genesis simapp.GenesisState) simapp.GenesisState {
+	suite.app = app.EthSetup(checkTx, func(app *app.Gurux, genesis simapp.GenesisState) simapp.GenesisState {
 		if suite.enableFeemarket {
 			// setup feemarketGenesis params
 			feemarketGenesis := feemarkettypes.DefaultGenesisState()

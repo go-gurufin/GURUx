@@ -12,12 +12,12 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
+	"github.com/gurufin2021/GURUx/crypto/ethsecp256k1"
 )
 
 func init() {
 	cfg := sdk.GetConfig()
-	cfg.SetBech32PrefixForAccount("evmos", "evmospub")
+	cfg.SetBech32PrefixForAccount("gurux", "guruxpub")
 }
 
 func TestIsSupportedKeys(t *testing.T) {
@@ -73,7 +73,7 @@ func TestIsSupportedKeys(t *testing.T) {
 	}
 }
 
-func TestGetEvmosAddressFromBech32(t *testing.T) {
+func TestGetGuruxAddressFromBech32(t *testing.T) {
 	testCases := []struct {
 		name       string
 		address    string
@@ -88,38 +88,38 @@ func TestGetEvmosAddressFromBech32(t *testing.T) {
 		},
 		{
 			"invalid bech32 address",
-			"evmos",
+			"gurux",
 			"",
 			true,
 		},
 		{
 			"invalid address bytes",
-			"evmos1123",
+			"gurux1123",
 			"",
 			true,
 		},
 		{
-			"evmos address",
-			"evmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
-			"evmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
+			"gurux address",
+			"gurux1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
+			"gurux1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
 			false,
 		},
 		{
 			"cosmos address",
 			"cosmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueulg2gmc",
-			"evmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
+			"gurux1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
 			false,
 		},
 		{
 			"osmosis address",
 			"osmo1qql8ag4cluz6r4dz28p3w00dnc9w8ueuhnecd2",
-			"evmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
+			"gurux1qql8ag4cluz6r4dz28p3w00dnc9w8ueuafmxps",
 			false,
 		},
 	}
 
 	for _, tc := range testCases {
-		addr, err := GetEvmosAddressFromBech32(tc.address)
+		addr, err := GetGuruxAddressFromBech32(tc.address)
 		if tc.expError {
 			require.Error(t, err, tc.name)
 		} else {
@@ -129,7 +129,7 @@ func TestGetEvmosAddressFromBech32(t *testing.T) {
 	}
 }
 
-func TestEvmosCoinDenom(t *testing.T) {
+func TestGuruxCoinDenom(t *testing.T) {
 	testCases := []struct {
 		name     string
 		denom    string
@@ -137,7 +137,7 @@ func TestEvmosCoinDenom(t *testing.T) {
 	}{
 		{
 			"valid denom - native coin",
-			"aevmos",
+			"agurux",
 			false,
 		},
 		{

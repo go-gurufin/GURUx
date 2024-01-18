@@ -14,10 +14,10 @@ import (
 
 	proto "github.com/gogo/protobuf/proto"
 
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/encoding"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	"github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/encoding"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	evmtypes "github.com/gurufin2021/GURUx/x/evm/types"
 
 	"github.com/stretchr/testify/require"
 )

@@ -3,9 +3,9 @@ package evm_test
 import (
 	"math/big"
 
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/x/evm/statedb"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/x/evm/statedb"
+	evmtypes "github.com/gurufin2021/GURUx/x/evm/types"
 )
 
 func (suite *AnteTestSuite) TestSignatures() {

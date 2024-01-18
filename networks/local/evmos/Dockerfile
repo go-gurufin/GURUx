@@ -6,7 +6,7 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y $PACKAGES
 
 # Set working directory for the build
-WORKDIR /go/src/github.com/evmos/evmos
+WORKDIR /go/src/github.com/gurux/gurux
 
 # Add source files
 COPY . .
@@ -22,12 +22,12 @@ WORKDIR /
 RUN apt-get update
 
 # Copy over binaries from the build-env
-COPY --from=build-env /go/src/github.com/evmos/evmos/build/evmosd /
-COPY --from=build-env /go/src/github.com/evmos/evmos/scripts/start-docker.sh /
+COPY --from=build-env /go/src/github.com/gurux/gurux/build/guruxd /
+COPY --from=build-env /go/src/github.com/gurux/gurux/scripts/start-docker.sh /
 
 EXPOSE 26656 26657 1317 9090 8545 8546
 
-# Run evmosd by default, omit entrypoint to ease using container with evmosd
+# Run guruxd by default, omit entrypoint to ease using container with guruxd
 #ENTRYPOINT ["/bin/bash", "-c"]
 
 RUN ./start-docker.sh &

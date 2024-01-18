@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package app
 
 import (
@@ -37,11 +21,11 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/evmos/evmos/v12/encoding"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
+	"github.com/gurufin2021/GURUx/encoding"
+	feemarkettypes "github.com/gurufin2021/GURUx/x/feemarket/types"
 
-	"github.com/evmos/evmos/v12/cmd/config"
-	"github.com/evmos/evmos/v12/utils"
+	"github.com/gurufin2021/GURUx/cmd/config"
+	"github.com/gurufin2021/GURUx/utils"
 )
 
 func init() {
@@ -54,7 +38,7 @@ func init() {
 var DefaultTestingAppInit func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
-// Evmos testing.
+// Gurux testing.
 var DefaultConsensusParams = &abci.ConsensusParams{
 	Block: &abci.BlockParams{
 		MaxBytes: 200000,
@@ -79,11 +63,11 @@ func init() {
 	config.SetBip44CoinType(cfg)
 }
 
-// Setup initializes a new Evmos. A Nop logger is set in Evmos.
+// Setup initializes a new Gurux. A Nop logger is set in Gurux.
 func Setup(
 	isCheckTx bool,
 	feemarketGenesis *feemarkettypes.GenesisState,
-) *Evmos {
+) *Gurux {
 	privVal := mock.NewPV()
 	pubKey, _ := privVal.GetPubKey()
 
@@ -101,7 +85,7 @@ func Setup(
 
 	db := dbm.NewMemDB()
 
-	app := NewEvmos(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
+	app := NewGurux(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
 		genesisState := NewDefaultGenesisState()
@@ -135,7 +119,7 @@ func Setup(
 	return app
 }
 
-func GenesisStateWithValSet(app *Evmos, genesisState simapp.GenesisState,
+func GenesisStateWithValSet(app *Gurux, genesisState simapp.GenesisState,
 	valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount,
 	balances ...banktypes.Balance,
 ) simapp.GenesisState {
@@ -202,6 +186,6 @@ func GenesisStateWithValSet(app *Evmos, genesisState simapp.GenesisState,
 func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 	cfg := encoding.MakeConfig(ModuleBasics)
-	app := NewEvmos(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, cfg, simapp.EmptyAppOptions{})
+	app := NewGurux(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, cfg, simapp.EmptyAppOptions{})
 	return app, NewDefaultGenesisState()
 }

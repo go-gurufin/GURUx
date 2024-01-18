@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package ibctesting
 
 import (
@@ -26,15 +10,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/ibc-go/v6/testing"
 	ibchelpers "github.com/cosmos/ibc-go/v6/testing/simapp/helpers"
-	"github.com/evmos/evmos/v12/app"
+	"github.com/gurufin2021/GURUx/app"
 	"github.com/stretchr/testify/require"
 )
 
-const DefaultFeeAmt = int64(150_000_000_000_000_000) // 0.15 EVMOS
+const DefaultFeeAmt = int64(150_000_000_000_000_000) // 0.15 GURUX
 
 var globalStartTime = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
 
-// NewCoordinator initializes Coordinator with N EVM TestChain's (Evmos apps) and M Cosmos chains (Simulation Apps)
+// NewCoordinator initializes Coordinator with N EVM TestChain's (Gurux apps) and M Cosmos chains (Simulation Apps)
 func NewCoordinator(t *testing.T, nEVMChains, mCosmosChains int) *ibctesting.Coordinator {
 	chains := make(map[string]*ibctesting.TestChain)
 	coord := &ibctesting.Coordinator{
@@ -140,8 +124,8 @@ func SendMsgs(chain *ibctesting.TestChain, feeAmt int64, msgs ...sdk.Msg) (*sdk.
 	// ensure the chain has the latest time
 	chain.Coordinator.UpdateTimeForChain(chain)
 
-	if evmosChain, ok := chain.App.(*app.Evmos); ok {
-		bondDenom = evmosChain.StakingKeeper.BondDenom(chain.GetContext())
+	if guruxChain, ok := chain.App.(*app.Gurux); ok {
+		bondDenom = guruxChain.StakingKeeper.BondDenom(chain.GetContext())
 	} else {
 		bondDenom = chain.GetSimApp().StakingKeeper.BondDenom(chain.GetContext())
 	}

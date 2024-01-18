@@ -14,13 +14,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/cmd/config"
-	"github.com/evmos/evmos/v12/encoding"
-	"github.com/evmos/evmos/v12/ethereum/eip712"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
+	"github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/cmd/config"
+	"github.com/gurufin2021/GURUx/encoding"
+	"github.com/gurufin2021/GURUx/ethereum/eip712"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/types"
+	"github.com/gurufin2021/GURUx/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,7 +31,7 @@ var (
 		encoding.MakeConfig(app.ModuleBasics).TxConfig,
 	)
 )
-var feePayerAddress = "evmos17xpfvakm2amg962yls6f84z3kell8c5ljcjw34"
+var feePayerAddress = "gurux17xpfvakm2amg962yls6f84z3kell8c5ljcjw34"
 
 type TestCaseStruct struct {
 	txBuilder              client.TxBuilder
@@ -203,7 +203,7 @@ func createPopulatedTestCase(t *testing.T) TestCaseStruct {
 
 	msgSend := banktypes.MsgSend{
 		FromAddress: feePayerAddress,
-		ToAddress:   "evmos12luku6uxehhak02py4rcz65zu0swh7wjun6msa",
+		ToAddress:   "gurux12luku6uxehhak02py4rcz65zu0swh7wjun6msa",
 		Amount: sdk.NewCoins(
 			sdk.NewCoin(
 				utils.BaseDenom,

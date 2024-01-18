@@ -1,10 +1,10 @@
 syntax = "proto3";
-package evmos.incentives.v1;
-import "evmos/incentives/v1/incentives.proto";
+package gurux.incentives.v1;
+import "gurux/incentives/v1/incentives.proto";
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/evmos/evmos/v12/x/incentives/types";
+option go_package = "github.com/gurufin2021/GURUx/x/incentives/types";
 
 // GenesisState defines the module's genesis state.
 message GenesisState {

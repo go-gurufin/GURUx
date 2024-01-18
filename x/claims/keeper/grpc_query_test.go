@@ -6,14 +6,14 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/x/claims/types"
+	"github.com/gurufin2021/GURUx/testutil"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/x/claims/types"
 )
 
 func (suite *KeeperTestSuite) TestTotalUnclaimed() {
 	ctx := sdk.WrapSDKContext(suite.ctx)
-	coins := sdk.NewCoins(sdk.NewCoin("aevmos", sdk.NewInt(1000)))
+	coins := sdk.NewCoins(sdk.NewCoin("agurux", sdk.NewInt(1000)))
 
 	testCases := []struct {
 		name       string
@@ -149,7 +149,7 @@ func (suite *KeeperTestSuite) TestClaimsRecord() {
 			"invalid address",
 			func() {
 				req = &types.QueryClaimsRecordRequest{
-					Address: "evmos1",
+					Address: "gurux1",
 				}
 			},
 			true,

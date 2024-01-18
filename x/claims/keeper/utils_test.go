@@ -13,17 +13,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/contracts"
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	evmostypes "github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
-	"github.com/evmos/evmos/v12/x/claims/types"
-	evm "github.com/evmos/evmos/v12/x/evm/types"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
-	incentivestypes "github.com/evmos/evmos/v12/x/incentives/types"
+	"github.com/gurufin2021/GURUx/app"
+	"github.com/gurufin2021/GURUx/contracts"
+	"github.com/gurufin2021/GURUx/crypto/ethsecp256k1"
+	"github.com/gurufin2021/GURUx/testutil"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	gurutypes "github.com/gurufin2021/GURUx/types"
+	"github.com/gurufin2021/GURUx/utils"
+	"github.com/gurufin2021/GURUx/x/claims/types"
+	evm "github.com/gurufin2021/GURUx/x/evm/types"
+	feemarkettypes "github.com/gurufin2021/GURUx/x/feemarket/types"
+	incentivestypes "github.com/gurufin2021/GURUx/x/incentives/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,7 +41,7 @@ func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 
 	suite.app = app.Setup(false, feemarkettypes.DefaultGenesisState())
 	header := testutil.NewHeader(
-		1, time.Now().UTC(), "evmos_9001-1", consAddress, nil, nil,
+		1, time.Now().UTC(), "gurux_9001-1", consAddress, nil, nil,
 	)
 	suite.ctx = suite.app.BaseApp.NewContext(false, header)
 
@@ -107,8 +107,8 @@ func (suite *KeeperTestSuite) CommitAfter(t time.Duration) {
 	suite.queryClientEvm = evm.NewQueryClient(queryHelperEvm)
 }
 
-func newEthAccount(baseAccount *authtypes.BaseAccount) evmostypes.EthAccount {
-	return evmostypes.EthAccount{
+func newEthAccount(baseAccount *authtypes.BaseAccount) gurutypes.EthAccount {
+	return gurutypes.EthAccount{
 		BaseAccount: baseAccount,
 		CodeHash:    common.BytesToHash(crypto.Keccak256(nil)).String(),
 	}

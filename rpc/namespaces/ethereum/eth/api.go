@@ -1,18 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
 package eth
 
 import (
@@ -28,15 +13,15 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/evmos/evmos/v12/rpc/backend"
+	"github.com/gurufin2021/GURUx/rpc/backend"
 
-	rpctypes "github.com/evmos/evmos/v12/rpc/types"
-	"github.com/evmos/evmos/v12/types"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	rpctypes "github.com/gurufin2021/GURUx/rpc/types"
+	"github.com/gurufin2021/GURUx/types"
+	evmtypes "github.com/gurufin2021/GURUx/x/evm/types"
 )
 
-// The Ethereum API allows applications to connect to an Evmos node that is
-// part of the Evmos blockchain. Developers can interact with on-chain EVM data
+// The Ethereum API allows applications to connect to an Gurux node that is
+// part of the Gurux blockchain. Developers can interact with on-chain EVM data
 // and send different types of transactions to the network by utilizing the
 // endpoints provided by the API. The API follows a JSON-RPC standard. If not
 // otherwise specified, the interface is derived from the Alchemy Ethereum API:

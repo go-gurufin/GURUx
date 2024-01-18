@@ -4,10 +4,10 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	anteutils "github.com/evmos/evmos/v12/app/ante/utils"
-	"github.com/evmos/evmos/v12/testutil"
-	testutiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/utils"
+	anteutils "github.com/gurufin2021/GURUx/app/ante/utils"
+	"github.com/gurufin2021/GURUx/testutil"
+	testutiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/utils"
 )
 
 // TestClaimStakingRewardsIfNecessary tests the ClaimStakingRewardsIfNecessary function

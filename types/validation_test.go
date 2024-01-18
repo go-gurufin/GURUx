@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/types"
+	utiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	"github.com/gurufin2021/GURUx/types"
 	"github.com/stretchr/testify/require"
 )
 

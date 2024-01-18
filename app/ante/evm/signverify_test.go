@@ -5,10 +5,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	ethante "github.com/evmos/evmos/v12/app/ante/evm"
-	"github.com/evmos/evmos/v12/testutil"
-	testutiltx "github.com/evmos/evmos/v12/testutil/tx"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	ethante "github.com/gurufin2021/GURUx/app/ante/evm"
+	"github.com/gurufin2021/GURUx/testutil"
+	testutiltx "github.com/gurufin2021/GURUx/testutil/tx"
+	evmtypes "github.com/gurufin2021/GURUx/x/evm/types"
 )
 
 func (suite *AnteTestSuite) TestEthSigVerificationDecorator() {
